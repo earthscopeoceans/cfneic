@@ -23,8 +23,9 @@ program rdGPS
 implicit none
 
 character*3 :: nr               ! eg 07 or 23a
-character*200 :: line,dir,fname,cmd,root
-character*30 :: timestamp,x
+character*1000 :: line,dir,fname,root
+character*1000 :: method,field
+character*30 :: timestamp
 character*6 :: kstnm1     ! eg P0007 or P0023a (for split files)
 
 integer :: epoch                ! Unix epoch (for debugging)
@@ -33,6 +34,7 @@ integer :: ep0,ep1              ! idem, for last leg
 integer :: ep2,ep3              ! epoch at exit, entry of mixed layer
 integer :: gpst1,gpstn          ! first last GPS epoch
 integer :: i,j,k,n,ios,envlen
+integer :: imethod,istart,istation,ilat,ilon,ipress
 integer :: largea               ! counts angles exceeding 20 deg from 180
 integer :: largesd              ! counts surface drifts > 1 km
 integer :: ngps                 ! nr of transmissions while at surface
@@ -101,7 +103,7 @@ k=len_trim(root)
 if(k>0.and.root(k:k).ne.'/') root=trim(root)//'/'
 fname = trim(root)//trim(dir)//'/geo_DET.csv'
 
-! open geo_DET.csv and make it Fortran readable
+! open geo_DET.csv and map the required header fields by name
 inquire(file=trim(fname), exist=ruthere)
 if(ruthere) then
   print *,'Reading from:'
@@ -111,12 +113,27 @@ else
   call log_error('rdGPS: cannot find '//trim(fname))
   goto 900
 endif  
-! select only lines with Pressure or GPS measurements
-cmd = 'grep Measurement '//trim(fname)//' > dumpgps'
-call system(cmd)
-call system("sed -i -e 's/,/ /g' dumpgps")      ! remove commas
-call system("sed -i -e 's/nan/0/g' dumpgps")    ! remove NaNs
-open(1,file='dumpgps',action='read')
+open(1,file=trim(fname),action='read')
+do
+  read(1,'(a)',iostat=ios) line
+  if(is_iostat_end(ios)) then
+    call log_error('rdGPS: missing geo_DET.csv header in '//trim(fname))
+    goto 900
+  endif
+  if(index(line,'MethodIdentifier').eq.1) exit
+enddo
+call csv_column(line,'MethodIdentifier',imethod)
+call csv_column(line,'StartTime',istart)
+call csv_column(line,'Station',istation)
+call csv_column(line,'Latitude',ilat)
+call csv_column(line,'Longitude',ilon)
+call csv_column(line,'WaterPressure',ipress)
+if(imethod.eq.0.or.istart.eq.0.or.istation.eq.0.or.ilat.eq.0.or. &
+  ilon.eq.0.or.ipress.eq.0) then
+  call log_error('rdGPS: missing required geo_DET.csv column in '// &
+    trim(fname))
+  goto 900
+endif
 
 ! Output file GPS.* has only the dive and surfacing locations
 open(2,file='GPS.'//trim(nr),action='write')
@@ -145,6 +162,8 @@ presst=0
 vascent=-1.
 vdive=-1.
 epstart=0
+largesd=0
+largea=0
 
 if(db) write(13,*) nr
 
@@ -154,11 +173,25 @@ do
   read(1,'(a)',iostat=ios) line
   if(is_iostat_end(ios)) exit
 
+  call csv_field(line,imethod,method)
+  if(index(method,'Measurement').ne.1) cycle
+  call csv_field(line,istart,timestamp)
+  call csv_field(line,istation,kstnm1)
+  if(len_trim(kstnm1).eq.0) then
+    write(4,'(a)') 'Missing station in geo_DET.csv measurement'
+    write(4,'(a)') trim(line)
+    call log_error('rdGPS: missing station in '//trim(fname)// &
+      ' for GPS.'//trim(nr)//': '//trim(line))
+    goto 900
+  endif
+
   ! Is this a Pressure reading?
-  if(line(13:15).eq.'Pre') then
+  if(index(method,'Measurement:Pressure').eq.1) then
     lastpress=press
     lastpresst=presst
-    read(line,*,iostat=ios) x,timestamp,x,x,x,x,x,x,x,press
+    call csv_field(line,ipress,field)
+    if(trim(field).eq.'nan') field='0'
+    read(field,*,iostat=ios) press
     if(ios.ne.0) then
       write(4,'(a,i6)') 'Pressure format error, ios=',ios
       write(4,'(a)') trim(line)
@@ -297,14 +330,33 @@ do
   endif                          
 
   ! this must be a GPS line
-  if(line(13:15).ne.'GPS') then
+  if(index(method,'Measurement:GPS').ne.1) then
     print *, 'Geo_DET file line not recognized:',trim(line)
     cycle
   endif  
   if(ngps.eq.0) nsurf=nsurf+1           ! count surfacings
   ngps=ngps+1
   if(ngps>1) newgps=.true.
-  read(line,*) x,timestamp,x,kstnm1,x,x,lat3,lon3  
+  call csv_field(line,ilat,field)
+  if(trim(field).eq.'nan') field='0'
+  read(field,*,iostat=ios) lat3
+  if(ios.ne.0) then
+    write(4,'(a,i6)') 'GPS latitude format error, ios=',ios
+    write(4,'(a)') trim(line)
+    call log_error('rdGPS: GPS latitude format error in '//trim(fname)// &
+      ' for GPS.'//trim(nr)//': '//trim(line))
+    goto 900
+  endif
+  call csv_field(line,ilon,field)
+  if(trim(field).eq.'nan') field='0'
+  read(field,*,iostat=ios) lon3
+  if(ios.ne.0) then
+    write(4,'(a,i6)') 'GPS longitude format error, ios=',ios
+    write(4,'(a)') trim(line)
+    call log_error('rdGPS: GPS longitude format error in '//trim(fname)// &
+      ' for GPS.'//trim(nr)//': '//trim(line))
+    goto 900
+  endif
   if(db) then
     call stamp2epoch(timestamp,month,day,t3,epoch)
     write(13,'(a,i3,1x,a,i12,2f9.3)') 'new GPS line ngps,date,pos=',ngps, &
@@ -348,6 +400,72 @@ write(4,*) largesd,' surface drifts (> 1km)'
 write(4,*) largea,' angles differ more than 30 deg from 180'
 
 900 continue
+end
+
+subroutine csv_column(header,name,idx)
+
+implicit none
+
+character(len=*), intent(in) :: header,name
+integer, intent(out) :: idx
+character*1000 :: field
+integer :: col,start,pos,hlen
+
+idx=0
+col=1
+start=1
+hlen=len_trim(header)
+do pos=1,hlen+1
+  if(pos.eq.hlen+1) then
+    field=' '
+    if(pos.gt.start) field=adjustl(header(start:pos-1))
+    if(trim(field).eq.trim(name)) idx=col
+    return
+  endif
+  if(header(pos:pos).eq.',') then
+    field=' '
+    if(pos.gt.start) field=adjustl(header(start:pos-1))
+    if(trim(field).eq.trim(name)) then
+      idx=col
+      return
+    endif
+    col=col+1
+    start=pos+1
+  endif
+enddo
+
+return
+end
+
+subroutine csv_field(line,want,value)
+
+implicit none
+
+character(len=*), intent(in) :: line
+integer, intent(in) :: want
+character(len=*), intent(out) :: value
+integer :: col,start,pos,hlen
+
+value=' '
+col=1
+start=1
+hlen=len_trim(line)
+do pos=1,hlen+1
+  if(pos.eq.hlen+1) then
+    if(col.eq.want.and.pos.gt.start) value=adjustl(line(start:pos-1))
+    return
+  endif
+  if(line(pos:pos).eq.',') then
+    if(col.eq.want) then
+      if(pos.gt.start) value=adjustl(line(start:pos-1))
+      return
+    endif
+    col=col+1
+    start=pos+1
+  endif
+enddo
+
+return
 end
 
 subroutine log_error(message)

@@ -19,12 +19,12 @@ Use this as a working checklist. Keep each step small enough to verify against t
 
 ## `geo_DET.csv` Parsing
 
-- [ ] Identify the exact required fields from `geo_DET.csv`: method, start time, station, latitude, longitude, and water pressure.
-- [ ] Replace positional `geo_DET.csv` parsing with header-name lookup.
-- [ ] Ignore extra columns such as `DataQuality` and `SampleCount`.
-- [ ] Validate required columns and fail with a useful error when missing.
-- [ ] Preserve output equivalence for known-good GeoCSV v2.2.0-1 inputs.
-- [ ] Add at least one fixture or copied sample representing the expanded `geo_DET.csv` layout.
+- [x] Identify the exact required fields from `geo_DET.csv`: method, start time, station, latitude, longitude, and water pressure.
+- [x] Replace positional `geo_DET.csv` parsing with header-name lookup.
+- [x] Ignore extra columns such as `DataQuality` and `SampleCount`.
+- [x] Validate required columns and fail with a useful error when missing.
+- [x] Preserve output equivalence for known-good GeoCSV v2.2.0-1 inputs.
+- [x] Add at least one fixture or copied sample representing the expanded `geo_DET.csv` layout.
 
 ## `cfneic` Inputs And Outputs
 
