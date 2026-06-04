@@ -15,7 +15,9 @@ ehb=
 
 usage() {
   cat <<'EOF'
-Usage: run_cfneic -o output_dir -n ident [options]
+Usage:
+  run_cfneic --output-dir DIR --ident IDENT [--input-root DIR]
+             [--tomocat FILE] [--neic FILE] [--ehb FILE]
 
 Options:
   -i, --input-root DIR   Input root containing 452*/ dirs, neic.csv, ehb.hdf,
