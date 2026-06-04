@@ -100,6 +100,13 @@ if [[ -n "$(find "$output_dir" -mindepth 1 -maxdepth 1 -print -quit)" ]]; then
   print -u2 "Output directory must be empty: $output_dir"
   exit 1
 fi
+error_log=$output_dir/errors.log
+: > "$error_log"
+export CFNEIC_ERROR_LOG=$error_log
+
+log_error() {
+  print -r -- "$*" >> "$error_log"
+}
 
 make -C "$repo_dir"
 
@@ -115,12 +122,12 @@ ln -s "$tomocat" "$output_dir/tomocat.txt"
     [[ -d "$d" ]] || continue
     dir=${d:t}
     nr=${dir[-2,-1]}
+    nfloat=$((nfloat + 1))
     "$repo_dir/build/rdGPS" "$dir" "$nr" "$input_root"
     if [[ ! -e "GPS.$nr" ]]; then
-      print -u2 "rdGPS did not create expected GPS.$nr for $dir"
-      exit 1
+      log_error "rdGPS: no GPS.$nr created for $dir"
+      continue
     fi
-    nfloat=$((nfloat + 1))
   done
 
   if [[ $nfloat -eq 0 ]]; then
@@ -132,6 +139,7 @@ ln -s "$tomocat" "$output_dir/tomocat.txt"
   for gps in GPS.*(N); do
     ndata=$(awk 'NR > 1 && NF {n++} END {print n + 0}' "$gps")
     if [[ "$ndata" -eq 0 ]]; then
+      log_error "rdGPS: moving header-only $gps to empty_gps/"
       mv "$gps" empty_gps/
     fi
   done

@@ -62,6 +62,7 @@ character*3 :: ok,mis
 character*2 :: gpsmm(NF),kstnm2
 character*80 :: dataf,fname,x
 character*220 :: pde
+character*300 :: emsg
 character*650 :: line           ! to read one line on Joel's file
 character :: ahyp*1,isol*3,iseq*2,ad*1,ident*12
 integer :: ds,ios,jday,missed,ndata,nloc(NF),nmm
@@ -98,7 +99,7 @@ real*4 :: iscdepth,mb,Ms,d2km=111.194
 real*4 :: phi,beta,eta          ! azimuth (N over E) of h,float,ray
 real*4 :: alpha                 ! angle between two legs
 logical :: db=.false.            ! debug flag
-logical :: neic,ruthere,gpsok
+logical :: neic,ruthere,gpsok,badgps
 character(len=19), external :: prtep, prtm
 
 n=command_argument_count()
@@ -153,6 +154,7 @@ do
   open(9,file=fname,action='read')
   read(9,*)             ! skip header
   j=0
+  badgps=.false.
   do
     read(9,*,iostat=ios) t2,t3,t23,d23,v23,acc,angle,latm2,lonm2, &
       latm3,lonm3,sdrft3,vdrft3
@@ -160,7 +162,11 @@ do
     if(ios.ne.0) then
       print *,'Reading ',fname,' t2=',t2,' j=',j
       write(6,*) 'ERROR IN GPS FILE ',ios,t2,t3
-      stop 'error reading GPS file'
+      write(emsg,'(3a,i0,a,i0)') 'cfneic: skipping bad GPS file ', &
+        trim(fname),', ios=',ios,', row=',j+1
+      call log_error(emsg)
+      badgps=.true.
+      exit
     endif
     if(t2.eq.0) cycle
     j=j+1
@@ -183,7 +189,16 @@ do
     gps(j,n)%vdrft3=vdrft3
     if(db) write(13,'(2i12,10f9.3)') gps(j,n)
   enddo
-  if (j<1) stop 'GPS.* file is empty'
+  close(9)
+  if(badgps) then
+    n=n-1
+    cycle
+  endif
+  if (j<1) then
+    call log_error('cfneic: skipping empty GPS file '//trim(fname))
+    n=n-1
+    cycle
+  endif
   nloc(n)=j             ! number of gps locations for float n
   write(12,'(i3,1x,a8,i8)') n,gpsmm(n),nloc(n)
 enddo
@@ -293,7 +308,12 @@ do
       if(tdif>-10.0.and.dist<1.0) then    ! if close to ISC event
         tobs=tobs+tdif
         call matchgps
-        call writeout
+        if(gpsok) then
+          call writeout
+        else
+          missed=missed+1
+          write(7,'(2a)') line(1:76),' no usable gps match'
+        endif
       else
         backspace(4)
         if(db) write(13,'(a)') 'Backspace Joel'
@@ -469,6 +489,26 @@ CONTAINS
   return
   end
 
+  subroutine log_error(message)
+
+  implicit none
+
+  character(len=*), intent(in) :: message
+  character*300 :: logfile
+  integer :: ios,loglen
+
+  call get_environment_variable('CFNEIC_ERROR_LOG',logfile,length=loglen,status=ios)
+  if(ios.eq.0.and.loglen>0) then
+    open(99,file=trim(logfile),position='append',action='write',status='unknown')
+    write(99,'(a)') trim(message)
+    close(99)
+  else
+    write(6,'(a)') trim(message)
+  endif
+
+  return
+  end subroutine log_error
+
   subroutine matchgps
 
   ! find the first GPS location *after* mmepoch for Mermaid kstnm
@@ -481,6 +521,7 @@ CONTAINS
 
   if(db) write(13,'(///,3a,i10,a,2i4,3i3.2,i4,2a)') 'matchgps for: ', &
     kstnm,' at ',mmepoch,' tinp=',tinp,' = ',prtm(tinp)
+  gpsok=.false.
 
   ! find m (=mermaid number)
   m=1
@@ -490,7 +531,10 @@ CONTAINS
   if(kstnm2.ne.gpsmm(m)) then
     write(6,*) 'Seeking GPS for ',kstnm2,' among:'
     write(6,'(100a3)') (gpsmm(i),i=1,nmm)
-    stop 'matchgps: kstnm2 not in gpsmm'
+    write(emsg,'(5a)') 'cfneic: no GPS file for station ',trim(kstnm), &
+      ' (',trim(kstnm2),')'
+    call log_error(emsg)
+    return
   endif
 
   if(db.and.jb.eq.0) then
@@ -502,7 +546,9 @@ CONTAINS
     enddo
   endif
   if(mmepoch>gps(nloc(m),m)%t3) then
-    gpsok=.false.
+    write(emsg,'(3a,i0,a,i0)') 'cfneic: recording after last GPS for ', &
+      trim(kstnm),', mmepoch=',mmepoch,', last_t3=',gps(nloc(m),m)%t3
+    call log_error(emsg)
     if(db) write(13,*) 'Last GPS skipped:',mmepoch,' > ',gps(nloc(m),m)%t3
     return
   endif
@@ -533,7 +579,12 @@ CONTAINS
   if(mmepoch<gps(jm,m)%t2) then
     jm=jm-1
     if(db) write(13,*) 'jm corrected:',jm,i2
-    if(jm<1) stop 'Error jm: recording occurs before first known location'
+    if(jm<1) then
+      write(emsg,'(3a,i0,a,i0)') 'cfneic: recording before first GPS for ', &
+        trim(kstnm),', mmepoch=',mmepoch,', first_t2=',gps(1,m)%t2
+      call log_error(emsg)
+      return
+    endif
   endif
   call del(stla,stlo,gps(jm,m)%latm2,gps(jm,m)%lonm2,x,baz)     ! find x
   x=x*d2km
@@ -554,7 +605,11 @@ CONTAINS
       mmepoch,gps(jm,m)%t3
     if(db) write(13,'(a,i5,i12,a,i12,a,i12)') 'Error: ',jm,gps(jm,m)%t2, &
       ' < ',mmepoch,' > ',gps(jm,m)%t3
-    stop 'Epoch error'
+    write(emsg,'(3a,i0,a,i0,a,i0)') 'cfneic: epoch bracket error for ', &
+      trim(kstnm),', t2=',gps(jm,m)%t2,', mmepoch=',mmepoch, &
+      ', t3=',gps(jm,m)%t3
+    call log_error(emsg)
+    return
   endif
 
   ! interpolated, or did this P wave trigger an ascent (<10 hr)?

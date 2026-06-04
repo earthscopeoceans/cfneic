@@ -120,13 +120,12 @@ Run:
   --ident run1 2>&1 | tee "$LOG"
 ```
 
-Expected legacy messages may include:
+Expected messages may include:
 
 - `Warning: single GPS ignored...`
-- `STOP Pressure format error on line 145`
 
-Those messages are expected from the current legacy `rdGPS` behavior for some
-floats. The important success signal is:
+Recoverable `rdGPS` and `cfneic` data issues are written to
+`$OUT/errors.log`. The important success signal is:
 
 ```text
 Run complete: <your output dir>
@@ -139,6 +138,8 @@ find "$OUT" -maxdepth 1 -type f -name 'GPS.*' | wc -l
 find "$OUT"/empty_gps -maxdepth 1 -type f -name 'GPS.*' -print | sort
 find "$OUT" -maxdepth 1 -type f -name 'path*.xy' | wc -l
 find "$OUT" -maxdepth 1 -type f -name 'out.rdGPS*' | wc -l
+wc -l "$OUT/errors.log"
+sed -n '1,20p' "$OUT/errors.log"
 ```
 
 Expected:
@@ -150,6 +151,7 @@ empty_gps/GPS.44
 empty_gps/GPS.45
 45 path*.xy files
 45 out.rdGPS* files
+errors.log present with recoverable data issues
 ```
 
 ## 8. Compare Core Outputs To Baseline

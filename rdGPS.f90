@@ -108,7 +108,8 @@ if(ruthere) then
   print *,trim(fname)
 else
   print *,'Cannot find ',trim(fname)
-  stop
+  call log_error('rdGPS: cannot find '//trim(fname))
+  goto 900
 endif  
 ! select only lines with Pressure or GPS measurements
 cmd = 'grep Measurement '//trim(fname)//' > dumpgps'
@@ -159,9 +160,11 @@ do
     lastpresst=presst
     read(line,*,iostat=ios) x,timestamp,x,x,x,x,x,x,x,press
     if(ios.ne.0) then
-      write(13,'(a)') trim(line)
-      write(13,*) 'Gives ios=',ios
-      stop 'Pressure format error on line 145'
+      write(4,'(a,i6)') 'Pressure format error, ios=',ios
+      write(4,'(a)') trim(line)
+      call log_error('rdGPS: pressure format error in '//trim(fname)// &
+        ' for GPS.'//trim(nr)//': '//trim(line))
+      goto 900
     endif
     call stamp2epoch(timestamp,month,day,tt,presst)
     if(press<20000.and.db) write(13,'(3a,i12,2i8,i3)') 'new P line', & 
@@ -344,6 +347,27 @@ write(4,'(a,f8.1,a)') 'over ',(gpstn-epstart)/86400.,' days'
 write(4,*) largesd,' surface drifts (> 1km)'
 write(4,*) largea,' angles differ more than 30 deg from 180'
 
+900 continue
+end
+
+subroutine log_error(message)
+
+implicit none
+
+character(len=*), intent(in) :: message
+character*300 :: logfile
+integer :: ios,loglen
+
+call get_environment_variable('CFNEIC_ERROR_LOG',logfile,length=loglen,status=ios)
+if(ios.eq.0.and.loglen>0) then
+  open(99,file=trim(logfile),position='append',action='write',status='unknown')
+  write(99,'(a)') trim(message)
+  close(99)
+else
+  write(6,'(a)') trim(message)
+endif
+
+return
 end
 
 subroutine wr3(lond,latd,lon3,lat3,wrap)

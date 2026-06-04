@@ -81,22 +81,29 @@ Compilation and workflow verified to run in zsh on Silicon Mac
 
 ++ DEBUG ++
 
-    error: $ ./cfneic tomocat.txt run1
-           Reading neic.csv
-            STOP GPS.* file is empty
+The modernized `run_cfneic` wrapper writes recoverable data issues to
+`errors.log` in the output directory and keeps processing. It currently handles
+two common legacy failures automatically:
 
- solution: (re)Move empty GPS (155 bytes filesize; e.g., GPS.03, GPS.44, GPS.45)
+    legacy error: $ ./cfneic tomocat.txt run1
+                  Reading neic.csv
+                   STOP GPS.* file is empty
 
-    error: $ ./cfneic tomocat.txt run1
-	   Reading neic.csv
-	   File ehb.hdf starts at 2018   1  0:19:15.680
-	   Seeking GPS for 39 among:
-	   01 02 04 05 [...]
-	   STOP matchgps: kstnm2 not in gpsmm
+    wrapper behavior: Move header-only GPS files into empty_gps/ and log the
+                      moved files in errors.log.
 
- solution: Remove lines for KSTNM found in tomocat with no related geo_DET.csv,
-           (e.g. 50, 29, 52, 53, 45, 44, 49, 39)
-           $ sed -i '' '/P0039/d' tomocat.txt
+    legacy error: $ ./cfneic tomocat.txt run1
+                  Reading neic.csv
+                  File ehb.hdf starts at 2018   1  0:19:15.680
+                  Seeking GPS for 39 among:
+                  01 02 04 05 [...]
+                  STOP matchgps: kstnm2 not in gpsmm
+
+    wrapper behavior: Log missing station/GPS matches in errors.log, mark those
+                      rows as missed, and continue without editing tomocat.txt.
+
+Fatal setup errors, such as missing neic.csv, missing ehb.hdf, missing tomocat,
+or exhausted Fortran array bounds, still stop the run.
 
 ++ OUTPUT ++
 
