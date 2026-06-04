@@ -13,13 +13,16 @@ Use paths that do not already exist, especially for `OUT`.
 ```sh
 SOURCE=/Users/jdsimon/programs/cfneic
 CLONE=/private/tmp/cfneic-clone-test
-INPUT=/Users/jdsimon/mermaid/cfneic
+LEGACY_INPUT=/Users/jdsimon/mermaid/cfneic
 OUT=/private/tmp/cfneic-clone-run1
+INPUT=$OUT/inputs
+RUN=$OUT/outputs/run1
 LOG=/private/tmp/cfneic-clone-run1.log
 ```
 
-`INPUT` is the existing known-good data/run root. `OUT` must be a new empty run
-directory. The wrapper will create it.
+`LEGACY_INPUT` is the existing known-good data/run root. `OUT` must be a new
+run root. The wrapper reads flat catalogs from `OUT/inputs` and writes generated
+products to `OUT/outputs/run1`.
 
 ## 1. Clone Or Copy The Source
 
@@ -91,9 +94,11 @@ Usage:
              [--tomocat FILE] [--neic FILE] [--ehb FILE]
 
 Options:
-  -i, --input-root DIR   Input root containing 452*/ dirs, neic.csv, ehb.hdf,
-                         and tomocat.txt. Default: /Users/jdsimon/mermaid/cfneic
-  -o, --output-dir DIR   Empty run-specific output directory to create/use.
+  -i, --input-root DIR   Flat input directory containing *geo*.csv, neic.csv,
+                         ehb.hdf, and tomocat.txt.
+                         Default: output-dir/inputs
+  -o, --output-dir DIR   Run root containing inputs/ and outputs/ subdirs.
+                         Generated files go to output-dir/outputs/IDENT.
   -n, --ident IDENT      cfneic run identifier, e.g. run1.
       --tomocat FILE     tomocat input file. Default: input-root/tomocat.txt
       --neic FILE        NEIC CSV file. Default: input-root/neic.csv
@@ -101,15 +106,31 @@ Options:
   -h, --help             Show this help.
 ```
 
-## 6. Run Into A New Output Directory
+## 6. Prepare A Flat Input Directory
 
-Make sure `OUT` is empty or does not exist:
+Create a flat input catalog directory from the known-good legacy tree:
 
 ```sh
-test ! -e "$OUT" || find "$OUT" -mindepth 1 -maxdepth 1 -print -quit
+mkdir -p "$INPUT"
+cp "$LEGACY_INPUT"/neic.csv "$INPUT"/
+cp "$LEGACY_INPUT"/ehb.hdf "$INPUT"/
+cp "$LEGACY_INPUT"/tomocat.txt "$INPUT"/
+for d in "$LEGACY_INPUT"/452*/; do
+  base=${d%/}
+  base=${base##*/}
+  cp "$d"/geo_DET.csv "$INPUT"/"${base}_geo_DET.csv"
+done
 ```
 
-If that prints anything, choose a different `OUT`.
+## 7. Run Into A New Output Directory
+
+Make sure the run output directory is empty or does not exist:
+
+```sh
+test ! -e "$RUN" || find "$RUN" -mindepth 1 -maxdepth 1 -print -quit
+```
+
+If that prints anything, choose a different `OUT` or `ident`.
 
 Run:
 
@@ -125,21 +146,21 @@ Expected messages may include:
 - `Warning: single GPS ignored...`
 
 Recoverable `rdGPS` and `cfneic` data issues are written to
-`$OUT/errors.log`. The important success signal is:
+`$RUN/errors.log`. The important success signal is:
 
 ```text
-Run complete: <your output dir>
+Run complete: <your run output dir>
 ```
 
-## 7. Check Output Inventory
+## 8. Check Output Inventory
 
 ```sh
-find "$OUT" -maxdepth 1 -type f -name 'GPS.*' | wc -l
-find "$OUT"/empty_gps -maxdepth 1 -type f -name 'GPS.*' -print | sort
-find "$OUT" -maxdepth 1 -type f -name 'path*.xy' | wc -l
-find "$OUT" -maxdepth 1 -type f -name 'out.rdGPS*' | wc -l
-wc -l "$OUT/errors.log"
-sed -n '1,20p' "$OUT/errors.log"
+find "$RUN" -maxdepth 1 -type f -name 'GPS.*' | wc -l
+find "$RUN"/empty_gps -maxdepth 1 -type f -name 'GPS.*' -print | sort
+find "$RUN" -maxdepth 1 -type f -name 'path*.xy' | wc -l
+find "$RUN" -maxdepth 1 -type f -name 'out.rdGPS*' | wc -l
+wc -l "$RUN/errors.log"
+sed -n '1,20p' "$RUN/errors.log"
 ```
 
 Expected:
@@ -154,18 +175,18 @@ empty_gps/GPS.45
 errors.log present with recoverable data issues
 ```
 
-## 8. Compare Core Outputs To Baseline
+## 9. Compare Core Outputs To Baseline
 
 Compare exact files against the existing known-good run root:
 
 ```sh
-cmp "$OUT/out.cfneic_trig_run1" "$INPUT/out.cfneic_trig_run1"
-cmp "$OUT/out.cfneic_int_run1" "$INPUT/out.cfneic_int_run1"
-cmp "$OUT/hypos_run1" "$INPUT/hypos_run1"
-cmp "$OUT/missed_events_run1" "$INPUT/missed_events_run1"
-cmp "$OUT/log.cfneic_run1" "$INPUT/log.cfneic_run1"
-cmp "$OUT/neic.txt" "$INPUT/neic.txt"
-cmp "$OUT/dumgps" "$INPUT/dumgps"
+cmp "$RUN/out.cfneic_trig_run1" "$LEGACY_INPUT/out.cfneic_trig_run1"
+cmp "$RUN/out.cfneic_int_run1" "$LEGACY_INPUT/out.cfneic_int_run1"
+cmp "$RUN/hypos_run1" "$LEGACY_INPUT/hypos_run1"
+cmp "$RUN/missed_events_run1" "$LEGACY_INPUT/missed_events_run1"
+cmp "$RUN/log.cfneic_run1" "$LEGACY_INPUT/log.cfneic_run1"
+cmp "$RUN/neic.txt" "$LEGACY_INPUT/neic.txt"
+cmp "$RUN/dumgps" "$LEGACY_INPUT/dumgps"
 ```
 
 No output from `cmp` means the files match.
@@ -173,40 +194,47 @@ No output from `cmp` means the files match.
 Check representative `rdGPS` products:
 
 ```sh
-cmp "$OUT/GPS.01" "$INPUT/GPS.01"
-cmp "$OUT/GPS.47" "$INPUT/GPS.47"
-cmp "$OUT/path01.xy" "$INPUT/path01.xy"
-cmp "$OUT/path47.xy" "$INPUT/path47.xy"
-cmp "$OUT/out.rdGPS01" "$INPUT/out.rdGPS01"
-cmp "$OUT/out.rdGPS47" "$INPUT/out.rdGPS47"
+cmp "$RUN/GPS.01" "$LEGACY_INPUT/GPS.01"
+cmp "$RUN/GPS.47" "$LEGACY_INPUT/GPS.47"
+cmp "$RUN/path01.xy" "$LEGACY_INPUT/path01.xy"
+cmp "$RUN/path47.xy" "$LEGACY_INPUT/path47.xy"
 ```
 
-No output means they match.
+No output means they match. `out.rdGPS*` embeds the input path on the first
+line, so compare the behavior-bearing diagnostics after that line:
 
-## 9. Record Checksums
+```sh
+tail -n +2 "$RUN/out.rdGPS01" > /tmp/out.rdGPS01.new
+tail -n +2 "$LEGACY_INPUT/out.rdGPS01" > /tmp/out.rdGPS01.old
+cmp /tmp/out.rdGPS01.new /tmp/out.rdGPS01.old
+
+tail -n +2 "$RUN/out.rdGPS47" > /tmp/out.rdGPS47.new
+tail -n +2 "$LEGACY_INPUT/out.rdGPS47" > /tmp/out.rdGPS47.old
+cmp /tmp/out.rdGPS47.new /tmp/out.rdGPS47.old
+```
+
+## 10. Record Checksums
 
 ```sh
 shasum -a 256 \
-  "$OUT/out.cfneic_trig_run1" \
-  "$OUT/out.cfneic_int_run1" \
-  "$OUT/hypos_run1" \
-  "$OUT/missed_events_run1" \
-  "$OUT/log.cfneic_run1" \
-  "$OUT/neic.txt" \
-  "$OUT/dumgps"
+  "$RUN/out.cfneic_trig_run1" \
+  "$RUN/out.cfneic_int_run1" \
+  "$RUN/hypos_run1" \
+  "$RUN/missed_events_run1" \
+  "$RUN/log.cfneic_run1" \
+  "$RUN/neic.txt" \
+  "$RUN/dumgps"
 
 shasum -a 256 \
-  "$OUT/GPS.01" \
-  "$OUT/GPS.47" \
-  "$OUT/path01.xy" \
-  "$OUT/path47.xy" \
-  "$OUT/out.rdGPS01" \
-  "$OUT/out.rdGPS47"
+  "$RUN/GPS.01" \
+  "$RUN/GPS.47" \
+  "$RUN/path01.xy" \
+  "$RUN/path47.xy"
 ```
 
 Expected checksum values are in `REGRESSION_BASELINE.md`.
 
-## 10. Report Back
+## 11. Report Back
 
 Please report:
 

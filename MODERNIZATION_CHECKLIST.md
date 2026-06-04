@@ -28,11 +28,11 @@ Use this as a working checklist. Keep each step small enough to verify against t
 
 ## `cfneic` Inputs And Outputs
 
-- [ ] Document required `cfneic` inputs: `tomocat.txt`, `neic.csv`, `ehb.hdf`, and `GPS.*`.
+- [x] Document required `cfneic` inputs: `tomocat.txt`, `neic.csv`, `ehb.hdf`, and `GPS.*`.
 - [ ] Preserve the current `run1` outputs as regression references.
 - [ ] Confirm behavior when `neic.csv` has or lacks a header.
 - [ ] Consider replacing shell-generated `neic.txt` and `dumgps` with direct Fortran or wrapper-managed files.
-- [ ] Make all generated filenames run-specific or output-directory-specific.
+- [x] Make all generated filenames run-specific or output-directory-specific.
 
 ## Fragility Cleanup
 

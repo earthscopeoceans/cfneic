@@ -6,7 +6,7 @@
 set -euo pipefail
 
 repo_dir=${0:A:h}
-input_root=/Users/jdsimon/mermaid/cfneic
+input_root=
 output_dir=
 ident=
 tomocat=
@@ -20,9 +20,11 @@ Usage:
              [--tomocat FILE] [--neic FILE] [--ehb FILE]
 
 Options:
-  -i, --input-root DIR   Input root containing 452*/ dirs, neic.csv, ehb.hdf,
-                         and tomocat.txt. Default: /Users/jdsimon/mermaid/cfneic
-  -o, --output-dir DIR   Empty run-specific output directory to create/use.
+  -i, --input-root DIR   Flat input directory containing *geo*.csv, neic.csv,
+                         ehb.hdf, and tomocat.txt.
+                         Default: output-dir/inputs
+  -o, --output-dir DIR   Run root containing inputs/ and outputs/ subdirs.
+                         Generated files go to output-dir/outputs/IDENT.
   -n, --ident IDENT      cfneic run identifier, e.g. run1.
       --tomocat FILE     tomocat input file. Default: input-root/tomocat.txt
       --neic FILE        NEIC CSV file. Default: input-root/neic.csv
@@ -30,8 +32,8 @@ Options:
   -h, --help             Show this help.
 
 The wrapper builds local executables with make if needed, runs rdGPS for each
-452*/ float directory under input-root, moves empty GPS files to empty_gps/,
-then runs cfneic from output-dir.
+flat *geo*.csv file under input-root, verifies input checksums did not change,
+moves empty GPS files to empty_gps/, then runs cfneic from output-dir/outputs/IDENT.
 EOF
 }
 
@@ -79,8 +81,11 @@ if [[ -z "$output_dir" || -z "$ident" ]]; then
   exit 2
 fi
 
-input_root=${input_root:A}
 output_dir=${output_dir:A}
+input_root=${input_root:-$output_dir/inputs}
+input_root=${input_root:A}
+outputs_root=$output_dir/outputs
+run_dir=$outputs_root/$ident
 tomocat=${tomocat:-$input_root/tomocat.txt}
 neic=${neic:-$input_root/neic.csv}
 ehb=${ehb:-$input_root/ehb.hdf}
@@ -95,12 +100,13 @@ for required in "$input_root" "$tomocat" "$neic" "$ehb"; do
   fi
 done
 
-mkdir -p "$output_dir"
-if [[ -n "$(find "$output_dir" -mindepth 1 -maxdepth 1 -print -quit)" ]]; then
-  print -u2 "Output directory must be empty: $output_dir"
+mkdir -p "$outputs_root"
+mkdir -p "$run_dir"
+if [[ -n "$(find "$run_dir" -mindepth 1 -maxdepth 1 -print -quit)" ]]; then
+  print -u2 "Run output directory must be empty: $run_dir"
   exit 1
 fi
-error_log=$output_dir/errors.log
+error_log=$run_dir/errors.log
 : > "$error_log"
 export CFNEIC_ERROR_LOG=$error_log
 
@@ -108,30 +114,119 @@ log_error() {
   print -r -- "$*" >> "$error_log"
 }
 
+write_input_manifest() {
+  local manifest=$1
+  (
+    cd "$input_root"
+    find . -type f -print | sort | while IFS= read -r file; do
+      LC_ALL=C shasum -a 256 "$file"
+    done
+  ) > "$manifest"
+}
+
+geo_station() {
+  local csv=$1
+  awk -F, '
+    /^#/ { next }
+    $1 == "MethodIdentifier" {
+      for(i=1; i<=NF; i++) {
+        if($i == "Station") station_col=i
+      }
+      next
+    }
+    station_col && $1 ~ /^Measurement:/ && $station_col != "" && $station_col != "nan" {
+      print $station_col
+      exit
+    }
+  ' "$csv"
+}
+
+station_to_nr() {
+  local station=$1
+  local nr=${station[2,-1]}
+  while [[ ${#nr} -gt 2 && $nr == 0* ]]; do
+    nr=${nr[2,-1]}
+  done
+  print -r -- "$nr"
+}
+
+filename_to_nr() {
+  local filename=${1:t:r}
+  local nr=
+  if [[ "$filename" =~ '-[PN]-([[:alnum:]]+)' ]]; then
+    nr=$match[1]
+  fi
+  while [[ ${#nr} -gt 2 && $nr == 0* ]]; do
+    nr=${nr[2,-1]}
+  done
+  print -r -- "$nr"
+}
+
 make -C "$repo_dir"
 
-ln -s "$neic" "$output_dir/neic.csv"
-ln -s "$ehb" "$output_dir/ehb.hdf"
-ln -s "$tomocat" "$output_dir/tomocat.txt"
+input_manifest_before=$run_dir/input_manifest.before
+input_manifest_after=$run_dir/input_manifest.after
+
+check_input_manifest() {
+  local exit_status=$?
+  if [[ -f "$input_manifest_before" ]]; then
+    if ! write_input_manifest "$input_manifest_after"; then
+      exit_status=1
+    elif ! cmp -s "$input_manifest_before" "$input_manifest_after"; then
+      print -u2 "Input files changed during run: $input_root"
+      print -u2 "Compare manifests:"
+      print -u2 "  $input_manifest_before"
+      print -u2 "  $input_manifest_after"
+      exit_status=1
+    fi
+  fi
+  exit $exit_status
+}
+
+write_input_manifest "$input_manifest_before"
+trap check_input_manifest EXIT
 
 (
-  cd "$output_dir"
+  cd "$run_dir"
+
+  cp "$neic" neic.csv
+  cp "$ehb" ehb.hdf
+  cp "$tomocat" tomocat.txt
+
+  rdgps_root=$run_dir/rdgps_inputs
+  mkdir -p "$rdgps_root"
+  typeset -A seen_nrs
 
   nfloat=0
-  for d in "$input_root"/452*/; do
-    [[ -d "$d" ]] || continue
-    dir=${d:t}
-    nr=${dir[-2,-1]}
+  for geo_csv in "$input_root"/*geo*.csv(N); do
+    station=$(geo_station "$geo_csv")
+    if [[ -n "$station" ]]; then
+      nr=$(station_to_nr "$station")
+    else
+      nr=$(filename_to_nr "$geo_csv")
+      if [[ -z "$nr" ]]; then
+        log_error "rdGPS: no station found and no station id in filename $geo_csv"
+        continue
+      fi
+    fi
+    if [[ -z "$nr" || -n "${seen_nrs[$nr]-}" ]]; then
+      log_error "rdGPS: duplicate or invalid station id '$nr' from $geo_csv"
+      continue
+    fi
+    seen_nrs[$nr]=1
+    dir=${geo_csv:t:r}
+    mkdir -p "$rdgps_root/$dir"
+    cp "$geo_csv" "$rdgps_root/$dir/geo_DET.csv"
     nfloat=$((nfloat + 1))
-    "$repo_dir/build/rdGPS" "$dir" "$nr" "$input_root"
+    "$repo_dir/build/rdGPS" "$dir" "$nr" "$rdgps_root"
     if [[ ! -e "GPS.$nr" ]]; then
-      log_error "rdGPS: no GPS.$nr created for $dir"
+      log_error "rdGPS: no GPS.$nr created for $geo_csv"
       continue
     fi
   done
 
   if [[ $nfloat -eq 0 ]]; then
-    print -u2 "No 452*/ float directories found under $input_root"
+    print -u2 "No *geo*.csv files found under $input_root"
     exit 1
   fi
 
@@ -165,4 +260,4 @@ ln -s "$tomocat" "$output_dir/tomocat.txt"
   done
 )
 
-print "Run complete: $output_dir"
+print "Run complete: $run_dir"

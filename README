@@ -25,19 +25,19 @@ Compilation and workflow verified to run in zsh on Silicon Mac
 
  In this dir:
 
- [0] Make $root directory, separate from this code repo, where input/output data
- files are to be saved, e.g., $MERMAID/cfneic/.  Copy all individual-float
- processed dirs (e.g., 452.*/) and tomocat.txt there.
+ [0] Make $root directory, separate from this code repo, where input catalogs
+ and generated products are saved, e.g., $MERMAID/cfneic/.  Keep curated input
+ files in $root/inputs and generated run products in $root/outputs/IDENT.
 
  [1] go to http://download.isc.ac.uk/isc-ehb/ and download the latest files such
  as 2019.hdf.gz, 2020.hdf.gz, etc., if you do not have these yet. Concatenate
- these hdf files in ehb.hdf in chronological order and save/cp to $root.
+ these hdf files in ehb.hdf in chronological order and save/cp to $root/inputs.
 
  [2] go to https://earthquake.usgs.gov/earthquakes/search/, choose your minimum
  magnitude as 2.5+ (or custom if that is too low for you), and CSV under Output
  options, as well as the start and stop dates you want. Download the CSV files
  and concatenate them into a file neic.csv, also in chronological order, and
- save/cp to $root.
+ save/cp to $root/inputs.
 
  [3] edit program rdGPS.f90 to define $root directory.
 
@@ -55,16 +55,19 @@ Compilation and workflow verified to run in zsh on Silicon Mac
 
      make
 
- [7] Run the workflow into a new, empty output directory:
+ [7] Run the workflow from a flat input catalog directory:
 
-     ./run_cfneic -i /Users/jdsimon/mermaid/cfneic \
-       -o /path/to/new/run_dir \
+     ./run_cfneic -o /Users/jdsimon/mermaid/cfneic \
        -n run1
 
- The wrapper runs rdGPS for each 452*/ float directory under the input root,
- moves header-only GPS files into empty_gps/, then runs cfneic from the output
- directory. It symlinks neic.csv, ehb.hdf, and tomocat.txt into the output
- directory, so input data and executables do not need to be manually copied.
+ By default, `-i/--input-root` is `/Users/jdsimon/mermaid/cfneic/inputs`.
+ The input directory is flat and contains `*geo*.csv`, `neic.csv`, `ehb.hdf`,
+ and `tomocat.txt`. The wrapper writes generated products to
+ `/Users/jdsimon/mermaid/cfneic/outputs/run1`, records before/after input
+ checksums, copies inputs needed by legacy programs into the run output
+ directory, moves header-only GPS files into empty_gps/, then runs cfneic from
+ the run output directory. The original files under `inputs/` are not modified;
+ the run fails if their before/after checksums differ.
 
  Legacy manual run path:
 
