@@ -6,7 +6,7 @@ Use this as a working checklist. Keep each step small enough to verify against t
 
 - [x] Capture a regression baseline from the current successful run: file counts, output checksums, and a few representative numeric comparisons.
 - [x] Add a small build script or Makefile that preserves the current compile commands and source order.
-- [ ] Record the exact compiler/version and platform used for the baseline.
+- [x] Record the exact compiler/version and platform used for the baseline.
 
 ## Input Paths And Run Orchestration
 

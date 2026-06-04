@@ -8,6 +8,25 @@ Baseline captured from the current successful run products in `/Users/jdsimon/me
 - Run identifier: `run1`
 - Known-good run root: `/Users/jdsimon/mermaid/cfneic`
 
+## Toolchain And Platform
+
+Compiler:
+
+```text
+/opt/homebrew/bin/gfortran
+GNU Fortran (Homebrew GCC 14.1.0_2) 14.1.0
+```
+
+Platform:
+
+```text
+ProductName:    macOS
+ProductVersion: 14.8.7
+BuildVersion:   23J520
+Machine:        arm64
+Kernel:         Darwin Kernel Version 23.6.0: Tue Apr 21 20:21:13 PDT 2026; root:xnu-10063.141.1.712.16~1/RELEASE_ARM64_T6031
+```
+
 ## File Counts
 
 Top-level run-root inventory:
