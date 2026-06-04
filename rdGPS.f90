@@ -32,7 +32,7 @@ integer :: epstart
 integer :: ep0,ep1              ! idem, for last leg
 integer :: ep2,ep3              ! epoch at exit, entry of mixed layer
 integer :: gpst1,gpstn          ! first last GPS epoch
-integer :: i,j,k,n,ios
+integer :: i,j,k,n,ios,envlen
 integer :: largea               ! counts angles exceeding 20 deg from 180
 integer :: largesd              ! counts surface drifts > 1 km
 integer :: ngps                 ! nr of transmissions while at surface
@@ -82,13 +82,23 @@ root = '/Users/jdsimon/mermaid/cfneic/'
 
 n=command_argument_count()
 if(n<2) then
-  print *,'Usage: rdGPS dir nr, e.g.: rdGPS 452.020-P-0047/ 47'
-  print *,'reads file GeoCSV/452.020-P-0047/geo_DET.csv and writes GPS file'
+  print *,'Usage: rdGPS dir nr [root]'
+  print *,'e.g.: rdGPS 452.020-P-0047/ 47 /Users/jdsimon/mermaid/cfneic'
+  print *,'reads file root/452.020-P-0047/geo_DET.csv and writes GPS file'
   print *,'  GPS.47 in this directory for Mermaid P0047'
+  print *,'root defaults to CFNEIC_ROOT, if set, otherwise legacy root'
   stop
 endif  
 call get_command_argument(1,dir)
 call get_command_argument(2,nr)
+if(n>=3) then
+  call get_command_argument(3,root)
+else
+  call get_environment_variable('CFNEIC_ROOT',root,length=envlen,status=ios)
+  if(ios.ne.0) root = '/Users/jdsimon/mermaid/cfneic/'
+endif
+k=len_trim(root)
+if(k>0.and.root(k:k).ne.'/') root=trim(root)//'/'
 fname = trim(root)//trim(dir)//'/geo_DET.csv'
 
 ! open geo_DET.csv and make it Fortran readable

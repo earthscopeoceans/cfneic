@@ -10,12 +10,12 @@ Use this as a working checklist. Keep each step small enough to verify against t
 
 ## Input Paths And Run Orchestration
 
-- [ ] Remove the hard-coded `rdGPS` root by accepting a CLI argument or environment variable.
-- [ ] Keep `/Users/jdsimon/mermaid/cfneic` available as a temporary default until the new flow is verified.
-- [ ] Add a run wrapper that accepts input root, output directory, and `ident`.
-- [ ] Make the wrapper run the current `rdGPS_all` behavior without requiring manual executable/data copying.
-- [ ] Handle empty GPS files explicitly, rather than requiring manual moves to `empty_gps`.
-- [ ] Keep output and temp files in predictable run-specific locations to avoid accidental overwrites.
+- [x] Remove the hard-coded `rdGPS` root by accepting a CLI argument or environment variable.
+- [x] Keep `/Users/jdsimon/mermaid/cfneic` available as a temporary default until the new flow is verified.
+- [x] Add a run wrapper that accepts input root, output directory, and `ident`.
+- [x] Make the wrapper run the current `rdGPS_all` behavior without requiring manual executable/data copying.
+- [x] Handle empty GPS files explicitly, rather than requiring manual moves to `empty_gps`.
+- [x] Keep output and temp files in predictable run-specific locations to avoid accidental overwrites.
 
 ## `geo_DET.csv` Parsing
 

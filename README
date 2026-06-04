@@ -49,12 +49,31 @@ Compilation and workflow verified to run in zsh on Silicon Mac
 
 ++ RUN ++
 
+ Modernized run path from this source checkout:
+
+ [6] Build local executables:
+
+     make
+
+ [7] Run the workflow into a new, empty output directory:
+
+     ./run_cfneic -i /Users/jdsimon/mermaid/cfneic \
+       -o /path/to/new/run_dir \
+       -n run1
+
+ The wrapper runs rdGPS for each 452*/ float directory under the input root,
+ moves header-only GPS files into empty_gps/, then runs cfneic from the output
+ directory. It symlinks neic.csv, ehb.hdf, and tomocat.txt into the output
+ directory, so input data and executables do not need to be manually copied.
+
+ Legacy manual run path:
+
  In $root dir:
 
- [6] run rdGPS_all to create the GPS.XX files with the diving information for the
+ [8] run rdGPS_all to create the GPS.XX files with the diving information for the
  Mermaids (need only to be done once until you change the geo_DET.csv file)
 
- [6] Run `cfneic tomocat.txt ident` where 'ident' is some run identification
+ [9] Run `cfneic tomocat.txt ident` where 'ident' is some run identification
  (e.g. run1). Look at out.cfneic_trig* and out.cfneic_int* (I split output into
  events that triggered a surfacing and the rest). It has more information than
  you need because this was written for the Mermaid location paper, but the

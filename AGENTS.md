@@ -17,5 +17,6 @@
 - When a coherent work unit is complete, tell the user it is a good commit point
   and suggest a concise commit message. Use a plain, sensible, capitalized
   message rather than a `<type>: message` convention.
-- Any time you suggest a commit message, also ask whether the user wants a
-  version bump and suggest the bump type (`major`, `minor`, or `patch`)
+- Any time you suggest a commit message, also bump version (`major`, `minor`, or
+  `patch`) and alert user
+  

@@ -1,0 +1,158 @@
+#!/bin/zsh
+#
+# Run the legacy cfneic workflow from the source checkout without copying
+# executables or data files into the run directory by hand.
+
+set -euo pipefail
+
+repo_dir=${0:A:h}
+input_root=/Users/jdsimon/mermaid/cfneic
+output_dir=
+ident=
+tomocat=
+neic=
+ehb=
+
+usage() {
+  cat <<'EOF'
+Usage: run_cfneic -o output_dir -n ident [options]
+
+Options:
+  -i, --input-root DIR   Input root containing 452*/ dirs, neic.csv, ehb.hdf,
+                         and tomocat.txt. Default: /Users/jdsimon/mermaid/cfneic
+  -o, --output-dir DIR   Empty run-specific output directory to create/use.
+  -n, --ident IDENT      cfneic run identifier, e.g. run1.
+      --tomocat FILE     tomocat input file. Default: input-root/tomocat.txt
+      --neic FILE        NEIC CSV file. Default: input-root/neic.csv
+      --ehb FILE         ISC-EHB HDF file. Default: input-root/ehb.hdf
+  -h, --help             Show this help.
+
+The wrapper builds local executables with make if needed, runs rdGPS for each
+452*/ float directory under input-root, moves empty GPS files to empty_gps/,
+then runs cfneic from output-dir.
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -i|--input-root)
+      input_root=$2
+      shift 2
+      ;;
+    -o|--output-dir)
+      output_dir=$2
+      shift 2
+      ;;
+    -n|--ident)
+      ident=$2
+      shift 2
+      ;;
+    --tomocat)
+      tomocat=$2
+      shift 2
+      ;;
+    --neic)
+      neic=$2
+      shift 2
+      ;;
+    --ehb)
+      ehb=$2
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      print -u2 "Unknown argument: $1"
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+if [[ -z "$output_dir" || -z "$ident" ]]; then
+  print -u2 "Both --output-dir and --ident are required."
+  usage >&2
+  exit 2
+fi
+
+input_root=${input_root:A}
+output_dir=${output_dir:A}
+tomocat=${tomocat:-$input_root/tomocat.txt}
+neic=${neic:-$input_root/neic.csv}
+ehb=${ehb:-$input_root/ehb.hdf}
+tomocat=${tomocat:A}
+neic=${neic:A}
+ehb=${ehb:A}
+
+for required in "$input_root" "$tomocat" "$neic" "$ehb"; do
+  if [[ ! -e "$required" ]]; then
+    print -u2 "Required path does not exist: $required"
+    exit 1
+  fi
+done
+
+mkdir -p "$output_dir"
+if [[ -n "$(find "$output_dir" -mindepth 1 -maxdepth 1 -print -quit)" ]]; then
+  print -u2 "Output directory must be empty: $output_dir"
+  exit 1
+fi
+
+make -C "$repo_dir"
+
+ln -s "$neic" "$output_dir/neic.csv"
+ln -s "$ehb" "$output_dir/ehb.hdf"
+ln -s "$tomocat" "$output_dir/tomocat.txt"
+
+(
+  cd "$output_dir"
+
+  nfloat=0
+  for d in "$input_root"/452*/; do
+    [[ -d "$d" ]] || continue
+    dir=${d:t}
+    nr=${dir[-2,-1]}
+    "$repo_dir/build/rdGPS" "$dir" "$nr" "$input_root"
+    if [[ ! -e "GPS.$nr" ]]; then
+      print -u2 "rdGPS did not create expected GPS.$nr for $dir"
+      exit 1
+    fi
+    nfloat=$((nfloat + 1))
+  done
+
+  if [[ $nfloat -eq 0 ]]; then
+    print -u2 "No 452*/ float directories found under $input_root"
+    exit 1
+  fi
+
+  mkdir -p empty_gps
+  for gps in GPS.*(N); do
+    ndata=$(awk 'NR > 1 && NF {n++} END {print n + 0}' "$gps")
+    if [[ "$ndata" -eq 0 ]]; then
+      mv "$gps" empty_gps/
+    fi
+  done
+
+  gps_files=(GPS.*(N))
+  if [[ $#gps_files -eq 0 ]]; then
+    print -u2 "No non-empty GPS files remain after rdGPS processing."
+    exit 1
+  fi
+
+  "$repo_dir/build/cfneic" tomocat.txt "$ident"
+
+  for expected in \
+    "out.cfneic_trig_$ident" \
+    "out.cfneic_int_$ident" \
+    "hypos_$ident" \
+    "missed_events_$ident" \
+    "log.cfneic_$ident"; do
+    if [[ ! -s "$expected" ]]; then
+      print -u2 "cfneic did not create expected non-empty output: $expected"
+      exit 1
+    fi
+  done
+)
+
+print "Run complete: $output_dir"
