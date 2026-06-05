@@ -1,0 +1,100 @@
+#!/bin/zsh
+#
+# Regenerate run1 into a temporary output root and compare it to the current
+# known-good products in /Users/jdsimon/mermaid/cfneic.
+
+set -euo pipefail
+
+repo_dir=${0:A:h}
+baseline_root=${BASELINE_ROOT:-/Users/jdsimon/mermaid/cfneic}
+input_root=${INPUT_ROOT:-$baseline_root/inputs}
+ident=${IDENT:-run1}
+out_root=${VERIFY_OUT:-}
+
+if [[ -z "$out_root" ]]; then
+  out_root=$(mktemp -d /private/tmp/cfneic-verify-run1.XXXXXX)
+fi
+
+baseline_root=${baseline_root:A}
+input_root=${input_root:A}
+out_root=${out_root:A}
+run_dir=$out_root/outputs/$ident
+
+for required in "$baseline_root" "$input_root"; do
+  if [[ ! -e "$required" ]]; then
+    print -u2 "Required path does not exist: $required"
+    exit 1
+  fi
+done
+
+if [[ -e "$run_dir" && -n "$(find "$run_dir" -mindepth 1 -maxdepth 1 -print -quit)" ]]; then
+  print -u2 "Verification output directory must be empty: $run_dir"
+  exit 1
+fi
+
+print "Verification output root: $out_root"
+"$repo_dir/run_cfneic" \
+  --input-root "$input_root" \
+  --output-dir "$out_root" \
+  --ident "$ident"
+
+rc=0
+
+check_same() {
+  local generated=$1
+  local baseline=$2
+  local label=$3
+  if cmp -s "$generated" "$baseline"; then
+    print "OK $label"
+  else
+    print -u2 "MISMATCH $label"
+    rc=1
+  fi
+}
+
+for file in \
+  "out.cfneic_trig_$ident" \
+  "out.cfneic_int_$ident" \
+  "hypos_$ident" \
+  "missed_events_$ident" \
+  "log.cfneic_$ident" \
+  neic.txt \
+  dumgps \
+  GPS.01 \
+  GPS.47 \
+  path01.xy \
+  path47.xy; do
+  check_same "$run_dir/$file" "$baseline_root/$file" "$file"
+done
+
+for nr in 01 47; do
+  tail -n +2 "$run_dir/out.rdGPS$nr" > "$out_root/out.rdGPS$nr.generated.body"
+  tail -n +2 "$baseline_root/out.rdGPS$nr" > "$out_root/out.rdGPS$nr.baseline.body"
+  check_same \
+    "$out_root/out.rdGPS$nr.generated.body" \
+    "$out_root/out.rdGPS$nr.baseline.body" \
+    "out.rdGPS$nr body"
+done
+
+active_gps=$(find "$run_dir" -maxdepth 1 -type f -name 'GPS.*' | wc -l | tr -d ' ')
+if [[ "$active_gps" == "42" ]]; then
+  print "OK active GPS count"
+else
+  print -u2 "MISMATCH active GPS count: $active_gps"
+  rc=1
+fi
+
+if [[ ! -e "$run_dir/rdgps_inputs" ]]; then
+  print "OK no rdgps_inputs"
+else
+  print -u2 "MISMATCH rdgps_inputs exists"
+  rc=1
+fi
+
+if [[ $rc -eq 0 ]]; then
+  print "Verification complete: outputs match baseline"
+else
+  print -u2 "Verification failed: $run_dir"
+fi
+
+exit $rc

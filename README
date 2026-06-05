@@ -15,8 +15,9 @@ Compilation and workflow verified to run in zsh on Silicon Mac
  * MERMAID processed/ directory with geo_DET.csv written by automaid:
  https://github.com/earthscopeoceans/automaid
 
- !! NB: only verified to run on GeoCSV v2.2.0-1, which do not include
-    "DataQuality" and "SampleCount" columns. This repo requires update.
+ The modern wrapper reads a flat input catalog of `*geo*.csv` files. rdGPS
+ supports both the legacy GeoCSV v2.2.0-1 layout and expanded layouts with
+ extra columns such as `DataQuality` and `SampleCount`.
 
  * tomocat.txt, written by:
  https://github.com/joelsimon/omnia/blob/master/mermaid/tomography/write_tomocat1.m
@@ -25,40 +26,36 @@ Compilation and workflow verified to run in zsh on Silicon Mac
 
  In this dir:
 
- [0] Make $root directory, separate from this code repo, where input catalogs
- and generated products are saved, e.g., $MERMAID/cfneic/.  Keep curated input
- files in $root/inputs and generated run products in $root/outputs/IDENT.
+ [0] Choose a run root separate from this code repo, e.g.,
+ `$MERMAID/cfneic`. Keep curated input files in `$root/inputs` and generated
+ run products in `$root/outputs/IDENT`.
 
- [1] go to http://download.isc.ac.uk/isc-ehb/ and download the latest files such
- as 2019.hdf.gz, 2020.hdf.gz, etc., if you do not have these yet. Concatenate
- these hdf files in ehb.hdf in chronological order and save/cp to $root/inputs.
+ [1] Arrange a flat input catalog in `$root/inputs` containing:
 
- [2] go to https://earthquake.usgs.gov/earthquakes/search/, choose your minimum
- magnitude as 2.5+ (or custom if that is too low for you), and CSV under Output
- options, as well as the start and stop dates you want. Download the CSV files
- and concatenate them into a file neic.csv, also in chronological order, and
- save/cp to $root/inputs.
+     * `*geo*.csv`
+     * `neic.csv`
+     * `ehb.hdf`
+     * `tomocat.txt`
 
- [3] No source edits are required for paths. The wrapper passes flat GeoCSV file
- paths directly to rdGPS.
-
- [5] rdGPS_all remains as a legacy helper, but the modern wrapper does not
- require copying it to $root.
-
- [4] compile rdGPS.f90 and cfneic.f90 with `make` from this source checkout.
-
-++ RUN ++
-
- Modernized run path from this source checkout:
-
- [6] Build local executables:
+ [2] Build local executables from this checkout:
 
      make
 
- [7] Run the workflow from a flat input catalog directory:
+ No source edits or executable copies are required for normal runs.
+
+++ RUN ++
+
+ Run the workflow from a flat input catalog directory:
 
      ./run_cfneic -o /Users/jdsimon/mermaid/cfneic \
        -n run1
+
+ To inspect the resolved paths and derived `GPS.*` ids without generating
+ outputs:
+
+     ./run_cfneic -o /Users/jdsimon/mermaid/cfneic \
+       -n run1 \
+       --dry-run
 
  By default, `-i/--input-root` is `/Users/jdsimon/mermaid/cfneic/inputs`.
  The input directory is flat and contains `*geo*.csv`, `neic.csv`, `ehb.hdf`,
@@ -74,18 +71,17 @@ Compilation and workflow verified to run in zsh on Silicon Mac
  plus input manifests and generated diagnostics; flat GeoCSV files remain in the
  shared input catalog and are pinned by the manifests instead of copied per run.
 
- Legacy manual run path:
+ `cfneic` preserves the legacy `neic.csv` handling used by the baseline: it
+ converts the first five CSV fields to `neic.txt` and skips the first generated
+ line. Headered NEIC files therefore skip their header; no-header NEIC files
+ skip the first data row. `run_cfneic --dry-run` reports which case it sees.
 
- In $root dir:
+ To verify that a checkout still reproduces the current `run1` references:
 
- [8] run rdGPS_all to create the GPS.XX files with the diving information for the
- Mermaids (need only to be done once until you change the geo_DET.csv file)
+     make verify-run1
 
- [9] Run `cfneic tomocat.txt ident` where 'ident' is some run identification
- (e.g. run1). Look at out.cfneic_trig* and out.cfneic_int* (I split output into
- events that triggered a surfacing and the rest). It has more information than
- you need because this was written for the Mermaid location paper, but the
- hypocentres have been updated.
+ The old `rdGPS_all` and manual `cfneic tomocat.txt ident` path is retained as
+ legacy context only. Normal runs should use `run_cfneic`.
 
 ++ DEBUG ++
 
@@ -170,8 +166,8 @@ or exhausted Fortran array bounds, still stop the run.
  Mw: Moment magnitude if listed, otherwise mb if listed, otherwise Ms
  dt: travel time (tobs-To)
 
- The neic.txt file is extracted from the neic.csv file by cfneic.f90 so it is easier to read
- by this program
+ The neic.txt file is extracted from neic.csv by run_cfneic so it is easier to
+ read by cfneic.
 
  log.cfneic lists Mermaid code numbers and the number of GPS locations
 

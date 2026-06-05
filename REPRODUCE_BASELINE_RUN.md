@@ -103,6 +103,7 @@ Options:
       --tomocat FILE     tomocat input file. Default: input-root/tomocat.txt
       --neic FILE        NEIC CSV file. Default: input-root/neic.csv
       --ehb FILE         ISC-EHB HDF file. Default: input-root/ehb.hdf
+      --dry-run          Show resolved paths and input preflight, then exit.
   -h, --help             Show this help.
 ```
 
@@ -135,6 +136,12 @@ If that prints anything, choose a different `OUT` or `ident`.
 Run:
 
 ```sh
+./run_cfneic \
+  --input-root "$INPUT" \
+  --output-dir "$OUT" \
+  --ident run1 \
+  --dry-run
+
 ./run_cfneic \
   --input-root "$INPUT" \
   --output-dir "$OUT" \

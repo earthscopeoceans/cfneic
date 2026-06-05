@@ -52,8 +52,10 @@ type surfacing
   real*4 :: d23,v23,acc,angle,latm2,lonm2,latm3,lonm3,sdrft3,vdrft3
 end type surfacing
 
-! dimension of gps is for max NF floats and max NS surfacings per float
-integer, parameter :: NF=100,NS=600
+! dimension of gps is for max floats and max surfacings per float
+integer, parameter :: MAX_FLOATS=100,MAX_SURFACINGS=600
+integer, parameter :: TOMOCAT_MIN_LINE=530
+integer, parameter :: NF=MAX_FLOATS,NS=MAX_SURFACINGS
 type(surfacing), dimension(NS,NF) :: gps
 
 character*8 :: kstnm
@@ -128,7 +130,7 @@ write(11,'(4a)') 'year  jd hr mi  s  ms     evlo     evla', &
   '     stlo     stla    gcarc    tobs  stder   tasc     snr  ocdp', &
   '  stel     p      v1      v2     acc       b       h locnerr'
 
-! Read neic.csv and convert it to readable neic.txt
+! Read wrapper-generated neic.txt
 inquire(file='neic.csv',exist=ruthere)
 if(ruthere) then
   print *,'Reading neic.csv'
@@ -137,19 +139,30 @@ else
   stop
 endif
 
-call system("awk -F, '{print $1,$2,$3,$4,$5}' neic.csv > neic.txt")
+inquire(file='neic.txt',exist=ruthere)
+if(.not.ruthere) then
+  print *,'Cannot find neic.txt; run run_cfneic to prepare inputs'
+  stop
+endif
 open(1,file='neic.txt',action='read')
 read(1,*)               ! skip header
 
-! Read all GPS.* files and fill array gps()
-call system('ls GPS.* > dumgps')
+! Read all GPS files listed by wrapper-generated dumgps and fill array gps()
+inquire(file='dumgps',exist=ruthere)
+if(.not.ruthere) then
+  print *,'Cannot find dumgps; run run_cfneic to prepare GPS list'
+  stop
+endif
 open(8,file='dumgps',action='read')
 n=0
 do
   read(8,'(a)',iostat=ios) fname
   if(is_iostat_end(ios)) exit
   n=n+1
-  if(n>NF) stop 'Increase NF'
+  if(n>NF) then
+    print *,'Array limit reached reading GPS list, n=',n,' NF=',NF
+    stop 'Increase MAX_FLOATS'
+  endif
   read(fname(5:6),'(a)') gpsmm(n)       ! mermaid number (2 char)
   open(9,file=fname,action='read')
   read(9,*)             ! skip header
@@ -173,7 +186,7 @@ do
     if(j>NS) then
       print *,'Array limit reached reading ',trim(fname),', n=',n
       print *,'j,t2=',j,t2,' NS=',NS
-      stop 'Increase NS'
+      stop 'Increase MAX_SURFACINGS'
     endif
     gps(j,n)%t2=t2
     gps(j,n)%t3=t3
@@ -237,10 +250,16 @@ endif
 
 call date_and_time(date)
 
-! Open Joel's file and copy the 2 header lines
-open(4,file=dataf,action='read')
-read(4,'(a650)') line
-read(4,'(a650)') line
+! Open Joel's file and read the 2 header lines
+open(4,file=dataf,action='read',iostat=ios)
+if(ios.ne.0) then
+  write(6,*) 'Cannot open tomocat file ',trim(dataf),', ios=',ios
+  stop
+endif
+read(4,'(a650)',iostat=ios) line
+if(ios.ne.0) stop 'Cannot read first tomocat header line'
+read(4,'(a650)',iostat=ios) line
+if(ios.ne.0) stop 'Cannot read second tomocat header line'
 
 open(7,file='missed_events_'//trim(ident),action='write')
 write(7,'(15x,a,17x,a)') 'tinp','tisc      tdif      dist'
@@ -259,6 +278,7 @@ do
   endif
   if(is_iostat_end(ios)) exit
   ndata=ndata+1
+  call validate_tomocat_line(line,ndata)
   ! get inferred To and hypocentre from line
   call gett(mmepoch,evlo1,evla1,evdp1,line)
   ! get station info and observed travel time from inferred hypocentre
@@ -385,6 +405,7 @@ do
   if(db) write(13,'(a)') line(1:80)
   if(is_iostat_end(ios)) exit
   ndata=ndata+1
+  call validate_tomocat_line(line,ndata)
   ! get To and hypocentre from line
   call gett(mmepoch,evlo1,evla1,evdp1,line)
   call gets(stlo,stla,stel,gcarc,ocdp,tobs,stder,snr,line)
@@ -462,6 +483,22 @@ write(12,*) missed,' events could not be improved, see missed_events'
 write(12,*) 'File hypos* has ',kntev,' possible events'
 
 CONTAINS
+
+  subroutine validate_tomocat_line(record,record_number)
+
+  implicit none
+
+  character(len=*), intent(in) :: record
+  integer, intent(in) :: record_number
+
+  if(len_trim(record).lt.TOMOCAT_MIN_LINE) then
+    write(6,*) 'tomocat data row is too short, row=',record_number
+    write(6,*) 'length=',len_trim(record),' required=',TOMOCAT_MIN_LINE
+    stop 'Invalid tomocat line'
+  endif
+
+  return
+  end subroutine validate_tomocat_line
 
 
   subroutine writeout

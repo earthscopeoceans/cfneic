@@ -34,7 +34,7 @@ integer :: epstart
 integer :: ep0,ep1              ! idem, for last leg
 integer :: ep2,ep3              ! epoch at exit, entry of mixed layer
 integer :: gpst1,gpstn          ! first last GPS epoch
-integer :: i,j,k,n,ios,envlen
+integer :: i,j,k,n,ios,envlen,exit_code
 integer :: imethod,istart,istation,ilat,ilon,ipress
 integer :: largea               ! counts angles exceeding 20 deg from 180
 integer :: largesd              ! counts surface drifts > 1 km
@@ -80,6 +80,7 @@ real*4 :: vdrift1,vdrift3       ! speed of surface drift
 real*8 :: timediff
 
 root = '.'
+exit_code = 0
 
 n=command_argument_count()
 if(n<2) then
@@ -117,6 +118,7 @@ if(ruthere) then
 else
   print *,'Cannot find ',trim(fname)
   call log_error('rdGPS: cannot find '//trim(fname))
+  exit_code = 1
   goto 900
 endif  
 open(1,file=trim(fname),action='read')
@@ -124,6 +126,7 @@ do
   read(1,'(a)',iostat=ios) line
   if(is_iostat_end(ios)) then
     call log_error('rdGPS: missing geo_DET.csv header in '//trim(fname))
+    exit_code = 1
     goto 900
   endif
   if(index(line,'MethodIdentifier').eq.1) exit
@@ -138,6 +141,7 @@ if(imethod.eq.0.or.istart.eq.0.or.istation.eq.0.or.ilat.eq.0.or. &
   ilon.eq.0.or.ipress.eq.0) then
   call log_error('rdGPS: missing required geo_DET.csv column in '// &
     trim(fname))
+  exit_code = 1
   goto 900
 endif
 
@@ -203,6 +207,7 @@ do
       write(4,'(a)') trim(line)
       call log_error('rdGPS: pressure format error in '//trim(fname)// &
         ' for GPS.'//trim(nr)//': '//trim(line))
+      exit_code = 1
       goto 900
     endif
     call stamp2epoch(timestamp,month,day,tt,presst)
@@ -351,6 +356,7 @@ do
     write(4,'(a)') trim(line)
     call log_error('rdGPS: GPS latitude format error in '//trim(fname)// &
       ' for GPS.'//trim(nr)//': '//trim(line))
+    exit_code = 1
     goto 900
   endif
   call csv_field(line,ilon,field)
@@ -361,6 +367,7 @@ do
     write(4,'(a)') trim(line)
     call log_error('rdGPS: GPS longitude format error in '//trim(fname)// &
       ' for GPS.'//trim(nr)//': '//trim(line))
+    exit_code = 1
     goto 900
   endif
   if(db) then
@@ -406,6 +413,7 @@ write(4,*) largesd,' surface drifts (> 1km)'
 write(4,*) largea,' angles differ more than 30 deg from 180'
 
 900 continue
+if(exit_code.ne.0) stop 1
 end
 
 subroutine csv_column(header,name,idx)

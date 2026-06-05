@@ -86,7 +86,8 @@ integer :: y,m,d,mm,yy,dsincemarch
 
 if(y<1900 .or. y>2099) then
   write(6,*) 'march1days is called with ',y,m,d
-  stop 'Cannot handle year<1900 or >2099'
+  write(6,*) 'Valid march1days range is 1900 through 2099'
+  stop 'Cannot handle year outside 1900-2099'
 endif
 mm=mod(m+9,12)                  ! set mm: March=0, April=1,...,Feb=11
 dsincemarch=(mm*306+5)/10       ! days since March 1
@@ -233,6 +234,7 @@ logical :: db=.false.
 
 if(year<1964.or.year>2037) then
   print *,'date2epoch called with:',year,jday,hour,minut,nsec
+  print *,'Valid date2epoch range is 1964 through 2037'
   stop 'invalid year in date2epoch'
 endif  
 

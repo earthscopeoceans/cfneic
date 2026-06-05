@@ -12,6 +12,9 @@ ident=
 tomocat=
 neic=
 ehb=
+dry_run=false
+typeset -a geo_csvs
+typeset -a geo_nrs
 
 usage() {
   cat <<'EOF'
@@ -29,6 +32,7 @@ Options:
       --tomocat FILE     tomocat input file. Default: input-root/tomocat.txt
       --neic FILE        NEIC CSV file. Default: input-root/neic.csv
       --ehb FILE         ISC-EHB HDF file. Default: input-root/ehb.hdf
+      --dry-run          Show resolved paths and input preflight, then exit.
   -h, --help             Show this help.
 
 The wrapper builds local executables with make if needed, runs rdGPS for each
@@ -63,6 +67,10 @@ while [[ $# -gt 0 ]]; do
       ehb=$2
       shift 2
       ;;
+    --dry-run)
+      dry_run=true
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -92,6 +100,7 @@ ehb=${ehb:-$input_root/ehb.hdf}
 tomocat=${tomocat:A}
 neic=${neic:A}
 ehb=${ehb:A}
+error_log=$run_dir/errors.log
 
 for required in "$input_root" "$tomocat" "$neic" "$ehb"; do
   if [[ ! -e "$required" ]]; then
@@ -99,16 +108,6 @@ for required in "$input_root" "$tomocat" "$neic" "$ehb"; do
     exit 1
   fi
 done
-
-mkdir -p "$outputs_root"
-mkdir -p "$run_dir"
-if [[ -n "$(find "$run_dir" -mindepth 1 -maxdepth 1 -print -quit)" ]]; then
-  print -u2 "Run output directory must be empty: $run_dir"
-  exit 1
-fi
-error_log=$run_dir/errors.log
-: > "$error_log"
-export CFNEIC_ERROR_LOG=$error_log
 
 log_error() {
   print -r -- "$*" >> "$error_log"
@@ -122,6 +121,18 @@ write_input_manifest() {
       LC_ALL=C shasum -a 256 "$file"
     done
   ) > "$manifest"
+}
+
+write_neic_txt() {
+  awk -F, '{print $1,$2,$3,$4,$5}' neic.csv > neic.txt
+}
+
+write_dumgps() {
+  local gps
+  : > dumgps
+  for gps in GPS.*(N); do
+    print -r -- "$gps" >> dumgps
+  done
 }
 
 geo_station() {
@@ -162,6 +173,89 @@ filename_to_nr() {
   print -r -- "$nr"
 }
 
+neic_header_status() {
+  local first
+  if ! IFS= read -r first < "$neic"; then
+    print "unreadable"
+    return
+  fi
+  if [[ "$first" =~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T' ]]; then
+    print "no header; legacy cfneic skips first NEIC row"
+  else
+    print "header/non-date first row; legacy cfneic skips it"
+  fi
+}
+
+preflight_inputs() {
+  local preflight_errors=0
+  local geo_csv station nr source
+  typeset -A seen_nrs
+
+  geo_csvs=()
+  geo_nrs=()
+
+  print "Preflight:"
+  print "  input root: $input_root"
+  print "  output dir: $output_dir"
+  print "  run dir: $run_dir"
+  print "  ident: $ident"
+  print "  tomocat: $tomocat"
+  print "  neic: $neic"
+  print "  ehb: $ehb"
+  print "  neic.csv: $(neic_header_status)"
+
+  if [[ -e "$run_dir" && -n "$(find "$run_dir" -mindepth 1 -maxdepth 1 -print -quit)" ]]; then
+    print -u2 "Run output directory must be empty: $run_dir"
+    preflight_errors=1
+  fi
+
+  for geo_csv in "$input_root"/*geo*.csv(N); do
+    station=$(geo_station "$geo_csv")
+    if [[ -n "$station" ]]; then
+      nr=$(station_to_nr "$station")
+      source="Station=$station"
+    else
+      nr=$(filename_to_nr "$geo_csv")
+      source="filename fallback"
+    fi
+    if [[ -z "$nr" ]]; then
+      print -u2 "Preflight: no station id for $geo_csv"
+      preflight_errors=1
+      continue
+    fi
+    if [[ -n "${seen_nrs[$nr]-}" ]]; then
+      print -u2 "Preflight: duplicate station id '$nr' from $geo_csv"
+      preflight_errors=1
+      continue
+    fi
+    seen_nrs[$nr]=1
+    geo_csvs+=("$geo_csv")
+    geo_nrs+=("$nr")
+    print "  GPS.$nr <= ${geo_csv:t} ($source)"
+  done
+
+  if [[ $#geo_csvs -eq 0 ]]; then
+    print -u2 "No *geo*.csv files found under $input_root"
+    preflight_errors=1
+  else
+    print "  GeoCSV files: $#geo_csvs"
+  fi
+
+  return $preflight_errors
+}
+
+preflight_inputs
+
+if [[ "$dry_run" == true ]]; then
+  print "Dry run complete."
+  exit 0
+fi
+
+mkdir -p "$outputs_root"
+mkdir -p "$run_dir"
+: > "$error_log"
+export CFNEIC_ERROR_LOG=$error_log
+
 make -C "$repo_dir"
 
 input_manifest_before=$run_dir/input_manifest.before
@@ -192,26 +286,12 @@ trap check_input_manifest EXIT
   cp "$neic" neic.csv
   cp "$ehb" ehb.hdf
   cp "$tomocat" tomocat.txt
-
-  typeset -A seen_nrs
+  write_neic_txt
 
   nfloat=0
-  for geo_csv in "$input_root"/*geo*.csv(N); do
-    station=$(geo_station "$geo_csv")
-    if [[ -n "$station" ]]; then
-      nr=$(station_to_nr "$station")
-    else
-      nr=$(filename_to_nr "$geo_csv")
-      if [[ -z "$nr" ]]; then
-        log_error "rdGPS: no station found and no station id in filename $geo_csv"
-        continue
-      fi
-    fi
-    if [[ -z "$nr" || -n "${seen_nrs[$nr]-}" ]]; then
-      log_error "rdGPS: duplicate or invalid station id '$nr' from $geo_csv"
-      continue
-    fi
-    seen_nrs[$nr]=1
+  for (( idx=1; idx<=${#geo_csvs}; idx++ )); do
+    geo_csv=${geo_csvs[$idx]}
+    nr=${geo_nrs[$idx]}
     nfloat=$((nfloat + 1))
     "$repo_dir/build/rdGPS" "$geo_csv" "$nr"
     if [[ ! -e "GPS.$nr" ]]; then
@@ -239,6 +319,7 @@ trap check_input_manifest EXIT
     print -u2 "No non-empty GPS files remain after rdGPS processing."
     exit 1
   fi
+  write_dumgps
 
   "$repo_dir/build/cfneic" tomocat.txt "$ident"
 
