@@ -23,12 +23,13 @@ pointed at an input catalog and regenerate the established
 - 2026-06-05: The governing constraint is byte-for-byte equivalence with the
   current regression references unless a change is only a diagnostic or
   documentation improvement.
-- 2026-06-05: Added `verify_run1` plus `make verify-run1`. The script compares
+- 2026-06-05: Added `verify_legacy_outputs` plus
+  `make verify-legacy-outputs`. The script compares
   exact core products and representative rdGPS outputs; `out.rdGPS*` bodies are
   compared after line 1 because line 1 intentionally embeds the input path.
 - 2026-06-05: Simplified README around the normal path: arrange flat inputs,
-  run `make`, run `run_cfneic`, and use `make verify-run1`. `rdGPS_all` is now
-  explicitly legacy context rather than a recommended path.
+  run `make`, run `run_cfneic`, and use `make verify-legacy-outputs`.
+  `rdGPS_all` is now explicitly legacy context rather than a recommended path.
 - 2026-06-05: Added `run_cfneic --dry-run` and an always-on preflight. Dry-run
   against `/Users/jdsimon/mermaid/cfneic/inputs` created no output directory.
 - 2026-06-05: Preserved legacy NEIC first-line behavior. The baseline
@@ -45,7 +46,7 @@ pointed at an input catalog and regenerate the established
 - 2026-06-05: `rdGPS` now exits nonzero for fatal input errors. Header-only GPS
   files remain normal outputs so `run_cfneic` can keep moving them to
   `empty_gps/` as before.
-- 2026-06-05: First `make verify-run1` showed `GPS.43` has a known blank
+- 2026-06-05: First `make verify-legacy-outputs` showed `GPS.43` has a known blank
   station row. Treating that as fatal stops a baseline-equivalent run, so
   missing station rows remain recoverable diagnostics while missing files,
   missing headers, missing required columns, and numeric format errors stay
@@ -58,9 +59,9 @@ pointed at an input catalog and regenerate the established
   matching the latest fixed column read (`line(519:530)`). Baseline rows are
   638 characters.
 - 2026-06-05: Removed the Makefile `install` target. Normal operation is now
-  `make`, `./run_cfneic`, and `make verify-run1`; binaries are not installed
-  into the data root.
-- 2026-06-05: `make verify-run1` passed after the `GPS.43` exit-status
+  `make`, `./run_cfneic`, and `make verify-legacy-outputs`; binaries are not
+  installed into the data root.
+- 2026-06-05: `make verify-legacy-outputs` passed after the `GPS.43` exit-status
   refinement. Verified exact core products, `neic.txt`, `dumgps`,
   representative `GPS/path` files, representative `out.rdGPS*` bodies, active
   GPS count, and absence of `rdgps_inputs`.
@@ -73,14 +74,14 @@ pointed at an input catalog and regenerate the established
   no-data rdGPS outputs (`out.rdGPS03`) and keeping recoverable missing-station
   details in `errors.log` rather than adding new lines to `out.rdGPS43`,
   `out.rdGPS44`, and `out.rdGPS45`.
-- 2026-06-05: Expanded `verify_run1` to run the full audit comparison: exact
+- 2026-06-05: Expanded `verify_legacy_outputs` to run the full audit comparison: exact
   cfneic products, exact `neic.txt` and `dumgps`, all active `GPS.*`, all
   `empty_gps/GPS.*`, all `path*.xy`, all `out.rdGPS*` bodies after path-bearing
   line 1, input manifest stability, and absence of `rdgps_inputs`.
 - 2026-06-05: Added `verify_rdgps_fixtures` plus
   `make verify-rdgps-fixtures` to directly exercise legacy and expanded
   `geo_DET.csv` parser layouts from `testdata/`.
-- 2026-06-05: Moved the `verify_run1` comparison baseline into frozen
+- 2026-06-05: Moved the `verify_legacy_outputs` comparison baseline into frozen
   fixtures under `tests/fixtures/legacy_outputs/`; active reruns continue to
   write under `outputs/`.
 - 2026-06-05: Final full rerun under

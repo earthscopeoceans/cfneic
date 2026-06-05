@@ -80,10 +80,10 @@ Compilation and workflow verified to run in zsh on Silicon Mac
  line. Headered NEIC files therefore skip their header; no-header NEIC files
  skip the first data row. `run_cfneic --dry-run` reports which case it sees.
 
- To verify that a checkout still reproduces the frozen legacy `run1`
+ To verify that a checkout still reproduces the frozen legacy output
  references in `tests/fixtures/legacy_outputs/`:
 
-     make verify-run1
+     make verify-legacy-outputs
 
  To verify the focused `rdGPS` parser fixtures for both legacy and expanded
  GeoCSV layouts:

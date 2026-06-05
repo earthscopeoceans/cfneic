@@ -1,7 +1,7 @@
 # Reproduce The Baseline Run From A Fresh Checkout
 
 This guide verifies that a fresh checkout can build the Fortran programs and
-produce the same `run1` outputs as the frozen legacy-output fixtures in
+produce the same outputs as the frozen legacy-output fixtures in
 `tests/fixtures/legacy_outputs/`.
 
 It intentionally does not use `testdata/`.
