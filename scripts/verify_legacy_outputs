@@ -19,6 +19,8 @@ baseline_root=${baseline_root:A}
 input_root=${input_root:A}
 out_root=${out_root:A}
 run_dir=$out_root/outputs
+tomocat=$input_root/tomocat.txt
+verify_tomocat=$tomocat
 
 for required in "$baseline_root" "$input_root"; do
   if [[ ! -e "$required" ]]; then
@@ -27,9 +29,33 @@ for required in "$baseline_root" "$input_root"; do
   fi
 done
 
+if [[ ! -e "$tomocat" ]]; then
+  print -u2 -- "ERROR: Required path does not exist: $tomocat"
+  exit 1
+fi
+
+tomocat_header_lines=0
+while IFS= read -r line; do
+  if [[ "$line" == \#* ]]; then
+    tomocat_header_lines=$((tomocat_header_lines + 1))
+  else
+    break
+  fi
+done < "$tomocat"
+
+if [[ $tomocat_header_lines -lt 2 ]]; then
+  verify_tomocat=$out_root/tomocat.legacy-fixture.txt
+  awk -v n=$((2 - tomocat_header_lines)) '
+    /^#/ { print; next }
+    skipped < n { print "#" $0; skipped++; next }
+    { print }
+  ' "$tomocat" > "$verify_tomocat"
+fi
+
 print "Verification output root: $out_root"
 "$repo_dir/run_cfneic" \
   --input-root "$input_root" \
+  --tomocat "$verify_tomocat" \
   --output-dir "$out_root"
 
 rc=0

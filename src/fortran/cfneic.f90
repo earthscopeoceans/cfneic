@@ -231,16 +231,21 @@ endif
 
 call date_and_time(date)
 
-! Open tomocat file and read the two header lines
+! Open tomocat file and skip leading comment/header lines
 open(4,file=dataf,action='read',iostat=ios)
 if(ios.ne.0) then
   write(6,*) 'Cannot open tomocat file ',trim(dataf),', ios=',ios
   stop
 endif
-read(4,'(a650)',iostat=ios) line
-if(ios.ne.0) stop 'Cannot read first tomocat header line'
-read(4,'(a650)',iostat=ios) line
-if(ios.ne.0) stop 'Cannot read second tomocat header line'
+do
+  read(4,'(a650)',iostat=ios) line
+  if(is_iostat_end(ios)) stop 'Cannot find tomocat data rows'
+  if(ios.ne.0) stop 'Cannot read tomocat header/data line'
+  if(line(1:1).ne.'#') then
+    backspace(4)
+    exit
+  endif
+enddo
 
 open(7,file='missed_events',action='write')
 write(7,'(15x,a,17x,a)') 'tinp','tisc      tdif      dist'
