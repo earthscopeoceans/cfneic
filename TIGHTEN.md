@@ -84,3 +84,18 @@ pointed at an input catalog and regenerate the established
 - 2026-06-05: Final `errors.log` catalogs 97 recoverable data issues: 3 missing
   station rows, 3 header-only GPS moves, and 91 P0043 records after the last
   usable GPS. These are diagnostics only; no compared generated product differs.
+- 2026-06-05: Removed the user-facing ident/run flag and the `outputs/IDENT`
+  layout. `run_cfneic` now writes directly to `<outdir>/outputs` while keeping
+  the fixed legacy `run1` filename suffix internally so existing product names
+  remain comparable.
+- 2026-06-05: `run_cfneic` now removes and recreates `<outdir>/outputs` on
+  every non-dry run. Decision: the workflow I/O is small enough that complete
+  rewrite is simpler and safer than preserving existing product files. Treat
+  `outputs/` as product-only; do not store external analysis, hand-edited files,
+  or scratch artifacts there.
+- 2026-06-05: Recreated `/Users/jdsimon/mermaid/cfneic/outputs` with the flat
+  output layout. Full audit passed 149 checks against the legacy top-level
+  references, including the new assertion that no nested `outputs/run1`
+  directory remains.
+- 2026-06-05: Bumped patch version to `0.3.6` for the no-ident direct-output
+  run behavior.

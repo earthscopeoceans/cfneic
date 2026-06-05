@@ -28,7 +28,7 @@ Compilation and workflow verified to run in zsh on Silicon Mac
 
  [0] Choose a run root separate from this code repo, e.g.,
  `$MERMAID/cfneic`. Keep curated input files in `$root/inputs` and generated
- run products in `$root/outputs/IDENT`.
+ run products in `$root/outputs`.
 
  [1] Arrange a flat input catalog in `$root/inputs` containing:
 
@@ -47,29 +47,33 @@ Compilation and workflow verified to run in zsh on Silicon Mac
 
  Run the workflow from a flat input catalog directory:
 
-     ./run_cfneic -o /Users/jdsimon/mermaid/cfneic \
-       -n run1
+     ./run_cfneic -o /Users/jdsimon/mermaid/cfneic
 
  To inspect the resolved paths and derived `GPS.*` ids without generating
  outputs:
 
      ./run_cfneic -o /Users/jdsimon/mermaid/cfneic \
-       -n run1 \
        --dry-run
 
  By default, `-i/--input-root` is `/Users/jdsimon/mermaid/cfneic/inputs`.
  The input directory is flat and contains `*geo*.csv`, `neic.csv`, `ehb.hdf`,
  and `tomocat.txt`. The wrapper writes generated products to
- `/Users/jdsimon/mermaid/cfneic/outputs/run1`, records before/after input
- checksums, copies inputs needed by legacy programs into the run output
- directory, moves header-only GPS files into empty_gps/, then runs cfneic from
- the run output directory. rdGPS reads each flat GeoCSV file directly; no
- run-local compatibility copy of the GeoCSV catalog is created. The original
- files under `inputs/` are not modified; the run fails if their before/after
- checksums differ. Each run directory keeps the three legacy program inputs
- needed to reproduce cfneic locally (`tomocat.txt`, `neic.csv`, and `ehb.hdf`),
- plus input manifests and generated diagnostics; flat GeoCSV files remain in the
- shared input catalog and are pinned by the manifests instead of copied per run.
+ `/Users/jdsimon/mermaid/cfneic/outputs`, records before/after input checksums,
+ copies inputs needed by legacy programs into the output directory, moves
+ header-only GPS files into empty_gps/, then runs cfneic from the output
+ directory. rdGPS reads each flat GeoCSV file directly; no run-local
+ compatibility copy of the GeoCSV catalog is created. The original files under
+ `inputs/` are not modified; the run fails if their before/after checksums
+ differ. Each output directory keeps the three legacy program inputs needed to
+ reproduce cfneic locally (`tomocat.txt`, `neic.csv`, and `ehb.hdf`), plus input
+ manifests and generated diagnostics; flat GeoCSV files remain in the shared
+ input catalog and are pinned by the manifests instead of copied per run.
+
+ Every non-dry run removes and recreates `$root/outputs` before generating
+ products. This workflow is intentionally small enough that complete rewrite is
+ cleaner than preserving extant output files. Treat `$root/outputs` as a
+ product-only directory: do not keep external analysis files or hand-edited
+ artifacts there.
 
  `cfneic` preserves the legacy `neic.csv` handling used by the baseline: it
  converts the first five CSV fields to `neic.txt` and skips the first generated
@@ -80,7 +84,7 @@ Compilation and workflow verified to run in zsh on Silicon Mac
 
      make verify-run1
 
- The old `rdGPS_all` and manual `cfneic tomocat.txt ident` path is retained as
+ The old `rdGPS_all` and manual `cfneic tomocat.txt run1` path is retained as
  legacy context only. Normal runs should use `run_cfneic`.
 
 ++ DEBUG ++

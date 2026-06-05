@@ -16,13 +16,13 @@ CLONE=/private/tmp/cfneic-clone-test
 LEGACY_INPUT=/Users/jdsimon/mermaid/cfneic
 OUT=/private/tmp/cfneic-clone-run1
 INPUT=$OUT/inputs
-RUN=$OUT/outputs/run1
+RUN=$OUT/outputs
 LOG=/private/tmp/cfneic-clone-run1.log
 ```
 
 `LEGACY_INPUT` is the existing known-good data/run root. `OUT` must be a new
-run root. The wrapper reads flat catalogs from `OUT/inputs` and writes generated
-products to `OUT/outputs/run1`.
+run root. The wrapper reads flat catalogs from `OUT/inputs` and rewrites
+generated products in `OUT/outputs`.
 
 ## 1. Clone Or Copy The Source
 
@@ -90,7 +90,7 @@ The usage should read:
 
 ```text
 Usage:
-  run_cfneic --output-dir DIR --ident IDENT [--input-root DIR]
+  run_cfneic --output-dir DIR [--input-root DIR]
              [--tomocat FILE] [--neic FILE] [--ehb FILE]
 
 Options:
@@ -98,8 +98,7 @@ Options:
                          ehb.hdf, and tomocat.txt.
                          Default: output-dir/inputs
   -o, --output-dir DIR   Run root containing inputs/ and outputs/ subdirs.
-                         Generated files go to output-dir/outputs/IDENT.
-  -n, --ident IDENT      cfneic run identifier, e.g. run1.
+                         Generated files go directly to output-dir/outputs.
       --tomocat FILE     tomocat input file. Default: input-root/tomocat.txt
       --neic FILE        NEIC CSV file. Default: input-root/neic.csv
       --ehb FILE         ISC-EHB HDF file. Default: input-root/ehb.hdf
@@ -125,13 +124,11 @@ done
 
 ## 7. Run Into A New Output Directory
 
-Make sure the run output directory is empty or does not exist:
+Make sure you do not keep anything except generated workflow products under
+`$OUT/outputs`: every run removes and recreates that directory.
 
-```sh
-test ! -e "$RUN" || find "$RUN" -mindepth 1 -maxdepth 1 -print -quit
-```
-
-If that prints anything, choose a different `OUT` or `ident`.
+If you need to preserve old outputs, move or copy them outside `$OUT/outputs`
+before running.
 
 Run:
 
@@ -139,13 +136,11 @@ Run:
 ./run_cfneic \
   --input-root "$INPUT" \
   --output-dir "$OUT" \
-  --ident run1 \
   --dry-run
 
 ./run_cfneic \
   --input-root "$INPUT" \
-  --output-dir "$OUT" \
-  --ident run1 2>&1 | tee "$LOG"
+  --output-dir "$OUT" 2>&1 | tee "$LOG"
 ```
 
 Expected messages may include:
