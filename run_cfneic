@@ -71,7 +71,7 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      print -u2 "Unknown argument: $1"
+      print -u2 -- "ERROR: Unknown argument: $1"
       usage >&2
       exit 2
       ;;
@@ -79,7 +79,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "$output_dir" ]]; then
-  print -u2 "--output-dir is required."
+  print -u2 -- "ERROR: --output-dir is required."
   usage >&2
   exit 2
 fi
@@ -99,7 +99,7 @@ error_log=$run_dir/errors.log
 
 for required in "$input_root" "$tomocat" "$neic" "$ehb"; do
   if [[ ! -e "$required" ]]; then
-    print -u2 "Required path does not exist: $required"
+    print -u2 -- "ERROR: Required path does not exist: $required"
     exit 1
   fi
 done
@@ -211,12 +211,12 @@ preflight_inputs() {
       source="filename fallback"
     fi
     if [[ -z "$nr" ]]; then
-      print -u2 "Preflight: no station id for $geo_csv"
+      print -u2 -- "ERROR: Preflight: no station id for $geo_csv"
       preflight_errors=1
       continue
     fi
     if [[ -n "${seen_nrs[$nr]-}" ]]; then
-      print -u2 "Preflight: duplicate station id '$nr' from $geo_csv"
+      print -u2 -- "ERROR: Preflight: duplicate station id '$nr' from $geo_csv"
       preflight_errors=1
       continue
     fi
@@ -227,7 +227,7 @@ preflight_inputs() {
   done
 
   if [[ $#geo_csvs -eq 0 ]]; then
-    print -u2 "No *geo*.csv files found under $input_root"
+    print -u2 -- "ERROR: No *geo*.csv files found under $input_root"
     preflight_errors=1
   else
     print "  GeoCSV files: $#geo_csvs"
@@ -244,7 +244,7 @@ if [[ "$dry_run" == true ]]; then
 fi
 
 if [[ "$outputs_root" != */outputs || "$outputs_root" == "/outputs" ]]; then
-  print -u2 "Refusing to remove suspicious outputs directory: $outputs_root"
+  print -u2 -- "ERROR: Refusing to remove suspicious outputs directory: $outputs_root"
   exit 1
 fi
 rm -rf "$outputs_root"
@@ -263,10 +263,10 @@ check_input_manifest() {
     if ! write_input_manifest "$input_manifest_after"; then
       exit_status=1
     elif ! cmp -s "$input_manifest_before" "$input_manifest_after"; then
-      print -u2 "Input files changed during run: $input_root"
-      print -u2 "Compare manifests:"
-      print -u2 "  $input_manifest_before"
-      print -u2 "  $input_manifest_after"
+      print -u2 -- "ERROR: Input files changed during run: $input_root"
+      print -u2 -- "ERROR: Compare manifests:"
+      print -u2 -- "ERROR:   $input_manifest_before"
+      print -u2 -- "ERROR:   $input_manifest_after"
       exit_status=1
     fi
   fi
@@ -297,7 +297,7 @@ trap check_input_manifest EXIT
   done
 
   if [[ $nfloat -eq 0 ]]; then
-    print -u2 "No *geo*.csv files found under $input_root"
+    print -u2 -- "ERROR: No *geo*.csv files found under $input_root"
     exit 1
   fi
 
@@ -312,7 +312,7 @@ trap check_input_manifest EXIT
 
   gps_files=(GPS.*(N))
   if [[ $#gps_files -eq 0 ]]; then
-    print -u2 "No non-empty GPS files remain after rdGPS processing."
+    print -u2 -- "ERROR: No non-empty GPS files remain after rdGPS processing."
     exit 1
   fi
   write_dumgps
@@ -326,7 +326,7 @@ trap check_input_manifest EXIT
     "missed_events_$output_suffix" \
     "log.cfneic_$output_suffix"; do
     if [[ ! -s "$expected" ]]; then
-      print -u2 "cfneic did not create expected non-empty output: $expected"
+      print -u2 -- "ERROR: cfneic did not create expected non-empty output: $expected"
       exit 1
     fi
   done

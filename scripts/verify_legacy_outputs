@@ -22,7 +22,7 @@ run_dir=$out_root/outputs
 
 for required in "$baseline_root" "$input_root"; do
   if [[ ! -e "$required" ]]; then
-    print -u2 "Required path does not exist: $required"
+    print -u2 -- "ERROR: Required path does not exist: $required"
     exit 1
   fi
 done
@@ -43,7 +43,7 @@ check_same() {
   if cmp -s "$generated" "$baseline"; then
     ok_checks=$((ok_checks + 1))
   else
-    print -u2 "MISMATCH $label"
+    print -u2 -- "ERROR: MISMATCH $label"
     failed_checks=$((failed_checks + 1))
     rc=1
   fi
@@ -56,7 +56,7 @@ check_count() {
   if [[ "$actual" == "$expected" ]]; then
     ok_checks=$((ok_checks + 1))
   else
-    print -u2 "MISMATCH $label: actual=$actual expected=$expected"
+    print -u2 -- "ERROR: MISMATCH $label: actual=$actual expected=$expected"
     failed_checks=$((failed_checks + 1))
     rc=1
   fi
@@ -78,7 +78,7 @@ active_baseline=($baseline_root/GPS.*(N:t))
 check_count "${#active_generated}" "${#active_baseline}" "active GPS file count"
 for file in $active_baseline; do
   if [[ ! -e "$run_dir/$file" ]]; then
-    print -u2 "MISSING generated $file"
+    print -u2 -- "ERROR: MISSING generated $file"
     failed_checks=$((failed_checks + 1))
     rc=1
   else
@@ -87,7 +87,7 @@ for file in $active_baseline; do
 done
 for file in $active_generated; do
   if [[ ! -e "$baseline_root/$file" ]]; then
-    print -u2 "EXTRA generated $file"
+    print -u2 -- "ERROR: EXTRA generated $file"
     failed_checks=$((failed_checks + 1))
     rc=1
   fi
@@ -98,7 +98,7 @@ empty_baseline=($baseline_root/empty_gps/GPS.*(N:t))
 check_count "${#empty_generated}" "${#empty_baseline}" "empty GPS file count"
 for file in $empty_baseline; do
   if [[ ! -e "$run_dir/empty_gps/$file" ]]; then
-    print -u2 "MISSING generated empty_gps/$file"
+    print -u2 -- "ERROR: MISSING generated empty_gps/$file"
     failed_checks=$((failed_checks + 1))
     rc=1
   else
@@ -108,7 +108,7 @@ for file in $empty_baseline; do
 done
 for file in $empty_generated; do
   if [[ ! -e "$baseline_root/empty_gps/$file" ]]; then
-    print -u2 "EXTRA generated empty_gps/$file"
+    print -u2 -- "ERROR: EXTRA generated empty_gps/$file"
     failed_checks=$((failed_checks + 1))
     rc=1
   fi
@@ -119,7 +119,7 @@ path_baseline=($baseline_root/path*.xy(N:t))
 check_count "${#path_generated}" "${#path_baseline}" "path file count"
 for file in $path_baseline; do
   if [[ ! -e "$run_dir/$file" ]]; then
-    print -u2 "MISSING generated $file"
+    print -u2 -- "ERROR: MISSING generated $file"
     failed_checks=$((failed_checks + 1))
     rc=1
   else
@@ -128,7 +128,7 @@ for file in $path_baseline; do
 done
 for file in $path_generated; do
   if [[ ! -e "$baseline_root/$file" ]]; then
-    print -u2 "EXTRA generated $file"
+    print -u2 -- "ERROR: EXTRA generated $file"
     failed_checks=$((failed_checks + 1))
     rc=1
   fi
@@ -139,7 +139,7 @@ rdgps_baseline=($baseline_root/out.rdGPS*(N:t))
 check_count "${#rdgps_generated}" "${#rdgps_baseline}" "out.rdGPS file count"
 for file in $rdgps_baseline; do
   if [[ ! -e "$run_dir/$file" ]]; then
-    print -u2 "MISSING generated $file"
+    print -u2 -- "ERROR: MISSING generated $file"
     failed_checks=$((failed_checks + 1))
     rc=1
   else
@@ -151,7 +151,7 @@ for file in $rdgps_baseline; do
 done
 for file in $rdgps_generated; do
   if [[ ! -e "$baseline_root/$file" ]]; then
-    print -u2 "EXTRA generated $file"
+    print -u2 -- "ERROR: EXTRA generated $file"
     failed_checks=$((failed_checks + 1))
     rc=1
   fi
@@ -160,7 +160,7 @@ done
 if [[ ! -e "$run_dir/rdgps_inputs" ]]; then
   ok_checks=$((ok_checks + 1))
 else
-  print -u2 "MISMATCH rdgps_inputs exists"
+  print -u2 -- "ERROR: MISMATCH rdgps_inputs exists"
   failed_checks=$((failed_checks + 1))
   rc=1
 fi
@@ -168,7 +168,7 @@ fi
 if cmp -s "$run_dir/input_manifest.before" "$run_dir/input_manifest.after"; then
   ok_checks=$((ok_checks + 1))
 else
-  print -u2 "MISMATCH input manifests before/after"
+  print -u2 -- "ERROR: MISMATCH input manifests before/after"
   failed_checks=$((failed_checks + 1))
   rc=1
 fi
@@ -176,9 +176,9 @@ fi
 if [[ $rc -eq 0 ]]; then
   print "Verification complete: $ok_checks checks passed"
 else
-  print -u2 "Verification checks passed: $ok_checks"
-  print -u2 "Verification checks failed: $failed_checks"
-  print -u2 "Verification failed: $run_dir"
+  print -u2 -- "ERROR: Verification checks passed: $ok_checks"
+  print -u2 -- "ERROR: Verification checks failed: $failed_checks"
+  print -u2 -- "ERROR: Verification failed: $run_dir"
 fi
 
 exit $rc

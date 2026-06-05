@@ -19,7 +19,7 @@ geo_fixture=$repo_dir/tests/data/geo_DET-legacy.csv
 
 for required in "$repo_dir/run_cfneic" "$headered_neic" "$no_header_neic" "$geo_fixture"; do
   if [[ ! -e "$required" ]]; then
-    print -u2 "Required path does not exist: $required"
+    print -u2 -- "ERROR: Required path does not exist: $required"
     exit 1
   fi
 done
@@ -29,9 +29,9 @@ check_same() {
   local expected=$2
   local label=$3
   if [[ "$actual" != "$expected" ]]; then
-    print -u2 "MISMATCH $label"
-    print -u2 "  actual:   $actual"
-    print -u2 "  expected: $expected"
+    print -u2 -- "ERROR: MISMATCH $label"
+    print -u2 -- "ERROR:   actual:   $actual"
+    print -u2 -- "ERROR:   expected: $expected"
     exit 1
   fi
 }
@@ -67,9 +67,9 @@ run_case() {
     --output-dir "$run_root" \
     --dry-run > "$dry_log"
   if ! grep -q "neic.csv: $expected_status" "$dry_log"; then
-    print -u2 "MISMATCH $label dry-run NEIC status"
-    print -u2 "Expected: neic.csv: $expected_status"
-    print -u2 "Actual log:"
+    print -u2 -- "ERROR: MISMATCH $label dry-run NEIC status"
+    print -u2 -- "ERROR: Expected: neic.csv: $expected_status"
+    print -u2 -- "ERROR: Actual log:"
     sed -n '1,40p' "$dry_log" >&2
     exit 1
   fi
@@ -81,11 +81,11 @@ run_case() {
   local rc=$?
   set -e
   if [[ $rc -eq 0 ]]; then
-    print -u2 "Expected $label fixture run to stop after preparing neic.txt"
+    print -u2 -- "ERROR: Expected $label fixture run to stop after preparing neic.txt"
     exit 1
   fi
   if [[ ! -s "$run_root/outputs/neic.txt" ]]; then
-    print -u2 "Missing generated neic.txt for $label"
+    print -u2 -- "ERROR: Missing generated neic.txt for $label"
     exit 1
   fi
 

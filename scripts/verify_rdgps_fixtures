@@ -19,7 +19,7 @@ expanded_csv=$repo_dir/tests/data/geo_DET-expanded.csv
 
 for required in "$rdgps" "$legacy_csv" "$expanded_csv"; do
   if [[ ! -e "$required" ]]; then
-    print -u2 "Required path does not exist: $required"
+    print -u2 -- "ERROR: Required path does not exist: $required"
     exit 1
   fi
 done
@@ -30,7 +30,7 @@ check_file() {
   local file=$1
   local label=$2
   if [[ ! -s "$file" ]]; then
-    print -u2 "MISSING or empty $label: $file"
+    print -u2 -- "ERROR: MISSING or empty $label: $file"
     return 1
   fi
 }
@@ -40,7 +40,7 @@ check_count() {
   local expected=$2
   local label=$3
   if [[ "$actual" != "$expected" ]]; then
-    print -u2 "MISMATCH $label: actual=$actual expected=$expected"
+    print -u2 -- "ERROR: MISMATCH $label: actual=$actual expected=$expected"
     return 1
   fi
 }
