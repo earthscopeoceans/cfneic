@@ -1,0 +1,327 @@
+Analysis of /Users/jdsimon/mermaid/cfneic/452.112-N-01/geo_DET.csv pmx=     5000.
+Large sdrift at 2019-01-13T23:29:40.000Z       hrs:     0.327
+  vdrft,sdrft=    94.627     1.289
+  glat1,glon1=     2.009  -145.473
+Large sdrift at 2019-01-22T10:01:00.000Z       hrs:     0.335
+  vdrft,sdrft=    82.227     1.147
+  glat1,glon1=     2.031  -145.287
+Large sdrift at 2019-01-26T10:22:23.000Z       hrs:     0.356
+  vdrft,sdrft=    74.649     1.106
+  glat1,glon1=     2.000  -145.244
+Large sdrift at 2019-02-12T07:43:32.000Z       hrs:     0.368
+  vdrft,sdrft=    71.809     1.100
+  glat1,glon1=     1.989  -145.730
+Large sdrift at 2019-04-21T04:48:39.000Z       hrs:     0.366
+  vdrft,sdrft=    68.558     1.046
+  glat1,glon1=     2.063  -147.349
+Large sdrift at 2019-06-24T09:04:35.000Z       hrs:     0.315
+  vdrft,sdrft=    98.488     1.294
+  glat1,glon1=     1.683  -145.526
+Large sdrift at 2019-07-02T00:41:36.000Z       hrs:     0.366
+  vdrft,sdrft=   107.020     1.631
+  glat1,glon1=     1.739  -145.041
+Large sdrift at 2019-07-07T21:24:10.000Z       hrs:     0.348
+  vdrft,sdrft=    71.512     1.036
+  glat1,glon1=     1.819  -145.062
+Large sdrift at 2019-08-16T00:40:47.000Z       hrs:     0.338
+  vdrft,sdrft=   122.641     1.729
+  glat1,glon1=     1.518  -143.841
+Large sdrift at 2019-08-24T11:28:35.000Z       hrs:     0.375
+  vdrft,sdrft=    80.381     1.257
+  glat1,glon1=     1.525  -143.276
+Large sdrift at 2019-09-01T22:06:13.000Z       hrs:     0.396
+  vdrft,sdrft=   131.854     2.178
+  glat1,glon1=     1.412  -142.544
+Large sdrift at 2019-09-10T09:14:33.000Z       hrs:     0.358
+  vdrft,sdrft=   123.360     1.842
+  glat1,glon1=     1.561  -141.982
+Large sdrift at 2019-10-14T04:04:15.000Z       hrs:     0.329
+  vdrft,sdrft=    79.902     1.094
+  glat1,glon1=     1.483  -140.926
+Large sdrift at 2019-10-31T01:43:39.000Z       hrs:     0.388
+  vdrft,sdrft=    66.252     1.071
+  glat1,glon1=     1.819  -141.071
+Large sdrift at 2019-11-08T17:17:48.000Z       hrs:     0.354
+  vdrft,sdrft=    99.730     1.469
+  glat1,glon1=     1.907  -141.141
+Large sdrift at 2019-11-17T03:53:11.000Z       hrs:     0.356
+  vdrft,sdrft=    74.480     1.103
+  glat1,glon1=     1.841  -141.183
+Large sdrift at 2019-12-22T03:17:55.000Z       hrs:     0.340
+  vdrft,sdrft=    80.196     1.136
+  glat1,glon1=     2.239  -142.074
+Large sdrift at 2020-01-24T22:49:48.000Z       hrs:     0.378
+  vdrft,sdrft=    91.147     1.437
+  glat1,glon1=     2.210  -143.235
+Large sdrift at 2020-01-29T01:47:33.000Z       hrs:     0.342
+  vdrft,sdrft=   128.474     1.829
+  glat1,glon1=     2.022  -143.436
+Large sdrift at 2020-01-31T20:43:59.000Z       hrs:     0.333
+  vdrft,sdrft=   105.014     1.457
+  glat1,glon1=     1.945  -143.642
+Large sdrift at 2020-03-03T17:41:22.000Z       hrs:     0.351
+  vdrft,sdrft=    70.917     1.038
+  glat1,glon1=     1.889  -144.752
+Large sdrift at 2020-03-07T00:59:45.000Z       hrs:     0.319
+  vdrft,sdrft=    94.676     1.260
+  glat1,glon1=     1.917  -144.903
+Large sdrift at 2020-03-13T11:17:49.000Z       hrs:     0.384
+  vdrft,sdrft=    84.733     1.357
+  glat1,glon1=     1.876  -145.273
+Large sdrift at 2020-03-15T19:30:50.000Z       hrs:     0.374
+  vdrft,sdrft=    71.330     1.113
+  glat1,glon1=     1.941  -145.402
+Large sdrift at 2020-04-05T12:01:34.000Z       hrs:     0.349
+  vdrft,sdrft=    82.977     1.208
+  glat1,glon1=     1.809  -146.049
+Large sdrift at 2020-04-08T03:20:49.000Z       hrs:     0.383
+  vdrft,sdrft=    74.624     1.190
+  glat1,glon1=     1.865  -146.202
+Large sdrift at 2020-04-18T17:37:23.000Z       hrs:     0.364
+  vdrft,sdrft=    82.805     1.255
+  glat1,glon1=     1.624  -146.596
+Large sdrift at 2020-04-21T14:50:25.000Z       hrs:     0.352
+  vdrft,sdrft=    82.771     1.214
+  glat1,glon1=     1.584  -146.680
+Large sdrift at 2020-04-25T03:59:58.000Z       hrs:     0.336
+  vdrft,sdrft=    79.210     1.110
+  glat1,glon1=     1.620  -146.716
+Large sdrift at 2020-05-03T15:02:10.000Z       hrs:     0.359
+  vdrft,sdrft=    88.513     1.323
+  glat1,glon1=     1.610  -146.698
+Large sdrift at 2020-05-13T21:29:56.000Z       hrs:     0.334
+  vdrft,sdrft=    81.812     1.140
+  glat1,glon1=     1.583  -146.412
+Large sdrift at 2020-05-31T19:26:28.000Z       hrs:     0.394
+  vdrft,sdrft=    92.278     1.513
+  glat1,glon1=     1.626  -146.072
+Large sdrift at 2020-06-03T14:18:58.000Z       hrs:     0.374
+  vdrft,sdrft=    74.219     1.156
+  glat1,glon1=     1.699  -145.975
+Large sdrift at 2020-07-06T10:04:18.000Z       hrs:     0.355
+  vdrft,sdrft=    89.108     1.317
+  glat1,glon1=     1.507  -145.344
+Large sdrift at 2020-07-13T02:55:26.000Z       hrs:     0.357
+  vdrft,sdrft=   109.220     1.623
+  glat1,glon1=     1.606  -145.322
+Large sdrift at 2020-07-17T09:13:00.000Z       hrs:     0.354
+  vdrft,sdrft=    86.705     1.280
+  glat1,glon1=     1.781  -145.389
+Large sdrift at 2020-07-19T23:58:05.000Z       hrs:     0.366
+  vdrft,sdrft=    84.114     1.281
+  glat1,glon1=     1.816  -145.400
+Large sdrift at 2020-07-25T01:58:25.000Z       hrs:     0.346
+  vdrft,sdrft=    83.174     1.199
+  glat1,glon1=     1.832  -145.392
+Large sdrift at 2020-07-27T09:50:17.000Z       hrs:     0.359
+  vdrft,sdrft=   113.991     1.703
+  glat1,glon1=     1.815  -145.423
+Large sdrift at 2020-08-02T19:39:07.000Z       hrs:     0.331
+  vdrft,sdrft=   103.190     1.424
+  glat1,glon1=     1.769  -145.444
+Large sdrift at 2020-08-05T04:31:45.000Z       hrs:     0.337
+  vdrft,sdrft=   133.459     1.875
+  glat1,glon1=     1.709  -145.524
+Large sdrift at 2020-08-13T15:07:34.000Z       hrs:     0.348
+  vdrft,sdrft=    76.576     1.111
+  glat1,glon1=     1.629  -145.458
+Large sdrift at 2020-08-16T12:59:38.000Z       hrs:     0.344
+  vdrft,sdrft=    98.632     1.412
+  glat1,glon1=     1.653  -145.502
+Large sdrift at 2020-08-19T00:18:47.000Z       hrs:     0.370
+  vdrft,sdrft=   111.823     1.724
+  glat1,glon1=     1.631  -145.499
+Large sdrift at 2020-08-21T10:14:33.000Z       hrs:     0.352
+  vdrft,sdrft=    69.075     1.014
+  glat1,glon1=     1.622  -145.541
+Large sdrift at 2020-08-29T21:00:04.000Z       hrs:     0.374
+  vdrft,sdrft=   152.043     2.369
+  glat1,glon1=     1.627  -145.654
+Large sdrift at 2020-09-01T10:26:49.000Z       hrs:     0.376
+  vdrft,sdrft=   161.241     2.523
+  glat1,glon1=     1.717  -145.789
+Large sdrift at 2020-09-04T04:40:53.000Z       hrs:     0.327
+  vdrft,sdrft=   115.096     1.567
+  glat1,glon1=     1.717  -145.862
+Large sdrift at 2020-09-25T08:23:53.000Z       hrs:     0.372
+  vdrft,sdrft=   106.682     1.655
+  glat1,glon1=     1.864  -145.997
+Large sdrift at 2020-10-03T19:11:30.000Z       hrs:     0.345
+  vdrft,sdrft=    71.744     1.031
+  glat1,glon1=     1.641  -146.358
+Large sdrift at 2020-10-14T21:21:58.000Z       hrs:     0.327
+  vdrft,sdrft=   117.969     1.610
+  glat1,glon1=     1.294  -146.943
+Large sdrift at 2020-10-18T13:07:31.000Z       hrs:     0.338
+  vdrft,sdrft=   129.645     1.826
+  glat1,glon1=     1.126  -147.094
+Large sdrift at 2020-10-22T17:52:51.000Z       hrs:     0.351
+  vdrft,sdrft=    97.951     1.434
+  glat1,glon1=     1.055  -147.165
+Large sdrift at 2020-11-06T00:15:12.000Z       hrs:     0.368
+  vdrft,sdrft=    73.405     1.125
+  glat1,glon1=     1.431  -147.437
+Large sdrift at 2020-11-22T14:25:04.000Z       hrs:     0.374
+  vdrft,sdrft=   153.660     2.394
+  glat1,glon1=     1.444  -147.901
+Large sdrift at 2020-12-21T18:45:28.000Z       hrs:     0.381
+  vdrft,sdrft=    71.499     1.134
+  glat1,glon1=     1.526  -147.417
+Large sdrift at 2020-12-30T05:18:43.000Z       hrs:     0.354
+  vdrft,sdrft=   128.124     1.888
+  glat1,glon1=     1.555  -147.385
+Large sdrift at 2021-01-07T16:03:44.000Z       hrs:     0.374
+  vdrft,sdrft=    85.773     1.338
+  glat1,glon1=     1.722  -147.001
+Large sdrift at 2021-01-25T16:46:00.000Z       hrs:     0.368
+  vdrft,sdrft=    96.696     1.481
+  glat1,glon1=     2.417  -146.543
+Large sdrift at 2021-02-01T04:35:37.000Z       hrs:     0.380
+  vdrft,sdrft=    78.779     1.246
+  glat1,glon1=     2.473  -146.690
+Large sdrift at 2021-02-06T14:34:55.000Z       hrs:     0.362
+  vdrft,sdrft=   117.334     1.771
+  glat1,glon1=     2.407  -146.828
+Large sdrift at 2021-02-10T20:05:41.000Z       hrs:     0.350
+  vdrft,sdrft=   103.774     1.515
+  glat1,glon1=     2.289  -146.971
+Large sdrift at 2021-02-13T22:04:00.000Z       hrs:     0.376
+  vdrft,sdrft=    83.309     1.304
+  glat1,glon1=     2.119  -147.038
+Large sdrift at 2021-02-22T08:37:29.000Z       hrs:     0.372
+  vdrft,sdrft=    82.346     1.275
+  glat1,glon1=     1.873  -147.316
+Large sdrift at 2021-07-19T23:27:44.000Z       hrs:     0.317
+  vdrft,sdrft=    77.589     1.026
+  glat1,glon1=     1.529  -154.028
+Large sdrift at 2021-07-24T02:53:23.000Z       hrs:     0.310
+  vdrft,sdrft=    86.880     1.122
+  glat1,glon1=     1.637  -154.164
+Large sdrift at 2021-07-29T12:25:02.000Z       hrs:     0.346
+  vdrft,sdrft=    92.451     1.332
+  glat1,glon1=     1.654  -154.406
+Large sdrift at 2021-08-11T04:39:28.000Z       hrs:     0.371
+  vdrft,sdrft=   100.417     1.552
+  glat1,glon1=     1.742  -154.894
+Large sdrift at 2021-08-14T18:04:21.000Z       hrs:     0.347
+  vdrft,sdrft=    91.051     1.317
+  glat1,glon1=     1.857  -155.033
+Large sdrift at 2021-09-10T13:34:39.000Z       hrs:     0.352
+  vdrft,sdrft=   122.447     1.794
+  glat1,glon1=     1.299  -154.694
+Large sdrift at 2021-09-19T00:22:24.000Z       hrs:     0.342
+  vdrft,sdrft=    70.189     1.001
+  glat1,glon1=     1.540  -154.057
+Large sdrift at 2021-09-27T10:59:03.000Z       hrs:     0.326
+  vdrft,sdrft=   120.180     1.634
+  glat1,glon1=     1.353  -153.406
+Large sdrift at 2021-10-02T12:40:55.000Z       hrs:     0.349
+  vdrft,sdrft=   157.814     2.292
+  glat1,glon1=     1.210  -153.163
+Large sdrift at 2021-10-05T02:27:26.000Z       hrs:     0.333
+  vdrft,sdrft=   108.798     1.510
+  glat1,glon1=     1.165  -152.980
+Large sdrift at 2021-10-07T16:49:08.000Z       hrs:     0.357
+  vdrft,sdrft=    80.550     1.198
+  glat1,glon1=     1.180  -152.742
+Large sdrift at 2021-10-19T14:36:04.000Z       hrs:     0.352
+  vdrft,sdrft=   133.690     1.960
+  glat1,glon1=     1.440  -151.982
+Large sdrift at 2021-11-27T19:28:43.000Z       hrs:     0.364
+  vdrft,sdrft=    71.407     1.083
+  glat1,glon1=     0.874  -149.349
+Large sdrift at 2021-12-14T16:56:10.000Z       hrs:     0.345
+  vdrft,sdrft=    96.618     1.389
+  glat1,glon1=     1.215  -148.253
+Large sdrift at 2021-12-23T03:24:13.000Z       hrs:     0.357
+  vdrft,sdrft=   117.684     1.749
+  glat1,glon1=     1.168  -147.630
+Large sdrift at 2022-01-24T08:52:26.000Z       hrs:     0.341
+  vdrft,sdrft=    88.561     1.257
+  glat1,glon1=     1.131  -146.841
+Large sdrift at 2022-02-01T19:31:39.000Z       hrs:     0.357
+  vdrft,sdrft=    82.008     1.220
+  glat1,glon1=     1.658  -147.073
+Large sdrift at 2022-02-25T13:16:56.000Z       hrs:     0.374
+  vdrft,sdrft=    75.171     1.171
+  glat1,glon1=     1.116  -146.783
+Large sdrift at 2022-03-07T11:39:40.000Z       hrs:     0.382
+  vdrft,sdrft=    99.498     1.586
+  glat1,glon1=     1.831  -146.724
+Large sdrift at 2022-03-24T04:14:20.000Z       hrs:     0.364
+  vdrft,sdrft=    81.160     1.232
+  glat1,glon1=     1.787  -146.385
+Large sdrift at 2022-07-07T20:30:56.000Z       hrs:     0.320
+  vdrft,sdrft=    75.579     1.009
+  glat1,glon1=     1.269  -148.028
+Large sdrift at 2022-07-16T07:14:02.000Z       hrs:     0.362
+  vdrft,sdrft=   101.350     1.528
+  glat1,glon1=     1.146  -148.132
+Large sdrift at 2022-07-24T17:43:59.000Z       hrs:     0.346
+  vdrft,sdrft=   141.041     2.032
+  glat1,glon1=     0.828  -148.188
+Large sdrift at 2022-08-10T15:04:51.000Z       hrs:     0.392
+  vdrft,sdrft=    91.643     1.496
+  glat1,glon1=     0.771  -147.817
+Large sdrift at 2022-08-19T01:56:52.000Z       hrs:     0.341
+  vdrft,sdrft=   120.350     1.709
+  glat1,glon1=     1.054  -147.255
+Large sdrift at 2022-09-03T16:02:49.000Z       hrs:     0.331
+  vdrft,sdrft=    99.865     1.377
+  glat1,glon1=     0.920  -146.581
+Large sdrift at 2022-09-11T07:02:54.000Z       hrs:     0.323
+  vdrft,sdrft=    82.010     1.104
+  glat1,glon1=     0.891  -146.015
+Large sdrift at 2022-10-06T15:07:41.000Z       hrs:     0.361
+  vdrft,sdrft=   119.021     1.791
+  glat1,glon1=     0.949  -143.452
+Large sdrift at 2022-10-22T15:16:10.000Z       hrs:     0.318
+  vdrft,sdrft=    79.168     1.048
+  glat1,glon1=     0.691  -141.609
+Large sdrift at 2022-10-31T01:55:08.000Z       hrs:     0.356
+  vdrft,sdrft=    73.875     1.094
+  glat1,glon1=     0.653  -140.809
+Large sdrift at 2022-11-02T11:06:10.000Z       hrs:     0.381
+  vdrft,sdrft=    70.009     1.113
+  glat1,glon1=     0.758  -140.623
+Large sdrift at 2022-11-09T16:00:23.000Z       hrs:     0.384
+  vdrft,sdrft=    93.336     1.495
+  glat1,glon1=     1.360  -140.121
+Large sdrift at 2022-11-21T00:03:13.000Z       hrs:     0.396
+  vdrft,sdrft=   144.066     2.379
+  glat1,glon1=     1.079  -139.136
+Large sdrift at 2022-11-29T10:51:13.000Z       hrs:     0.356
+  vdrft,sdrft=    82.819     1.227
+  glat1,glon1=     0.929  -138.859
+Large sdrift at 2022-12-15T00:52:39.000Z       hrs:     0.347
+  vdrft,sdrft=    99.909     1.443
+  glat1,glon1=     1.569  -138.285
+Large sdrift at 2022-12-23T11:45:25.000Z       hrs:     0.380
+  vdrft,sdrft=    85.994     1.361
+  glat1,glon1=     1.441  -137.999
+Large sdrift at 2023-01-25T16:01:52.000Z       hrs:     0.351
+  vdrft,sdrft=    86.371     1.263
+  glat1,glon1=     1.462  -137.064
+Large sdrift at 2023-07-25T00:25:43.000Z       hrs:     0.348
+  vdrft,sdrft=    82.143     1.192
+  glat1,glon1=     1.820  -132.554
+Large sdrift at 2023-08-02T11:20:33.000Z       hrs:     0.338
+  vdrft,sdrft=    89.576     1.261
+  glat1,glon1=     1.743  -132.483
+Large sdrift at 2023-08-10T21:53:38.000Z       hrs:     0.336
+  vdrft,sdrft=    90.080     1.263
+  glat1,glon1=     1.585  -132.457
+Large sdrift at 2023-08-16T19:20:45.000Z       hrs:     0.364
+  vdrft,sdrft=   108.973     1.651
+  glat1,glon1=     1.573  -132.471
+Large sdrift at 2023-09-15T17:11:31.000Z       hrs:     0.374
+  vdrft,sdrft=   100.013     1.559
+  glat1,glon1=     1.552  -132.351
+Large sdrift at 2023-09-24T03:56:17.000Z       hrs:     0.356
+  vdrft,sdrft=    75.357     1.117
+  glat1,glon1=     1.608  -132.329
+
+Number of surfacings:  274
+over   1740.6 days
+         107  surface drifts (> 1km)
+         153  angles differ more than 30 deg from 180

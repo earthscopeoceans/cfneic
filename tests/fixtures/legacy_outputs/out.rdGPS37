@@ -1,0 +1,33 @@
+Analysis of /Users/jdsimon/mermaid/cfneic/452.020-P-0037/geo_DET.csv pmx=     5000.
+Large sdrift at 2019-08-18T00:35:55.000Z       hrs:     0.479
+  vdrft,sdrft=    50.798     1.014
+  glat1,glon1=   -27.037  -148.987
+Large sdrift at 2019-10-14T16:09:38.000Z       hrs:     0.501
+  vdrft,sdrft=    53.783     1.122
+  glat1,glon1=   -27.448  -148.395
+Large sdrift at 2019-10-30T21:17:16.000Z       hrs:     0.464
+  vdrft,sdrft=    57.196     1.107
+  glat1,glon1=   -26.853  -148.335
+Large sdrift at 2019-11-08T08:07:33.000Z       hrs:     0.495
+  vdrft,sdrft=    79.036     1.629
+  glat1,glon1=   -26.589  -148.231
+Large sdrift at 2020-01-07T17:58:20.000Z       hrs:     0.486
+  vdrft,sdrft=    52.731     1.067
+  glat1,glon1=   -27.686  -147.770
+Large sdrift at 2020-10-18T13:38:04.000Z       hrs:     0.479
+  vdrft,sdrft=    51.574     1.030
+  glat1,glon1=   -28.666  -146.889
+Large sdrift at 2021-01-06T05:42:39.000Z       hrs:     0.486
+  vdrft,sdrft=    60.254     1.220
+  glat1,glon1=   -28.605  -147.493
+Large sdrift at 2021-03-02T18:29:40.000Z       hrs:     0.468
+  vdrft,sdrft=    57.549     1.123
+  glat1,glon1=   -27.424  -146.625
+Large sdrift at 2021-03-10T07:08:19.000Z       hrs:     0.494
+  vdrft,sdrft=    65.177     1.341
+  glat1,glon1=   -27.208  -146.551
+
+Number of surfacings:  340
+over   1462.7 days
+           9  surface drifts (> 1km)
+         137  angles differ more than 30 deg from 180

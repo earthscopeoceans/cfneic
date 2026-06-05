@@ -1,12 +1,14 @@
 # Regression Baseline
 
-Baseline captured from the current successful run products in `/Users/jdsimon/mermaid/cfneic`.
+Baseline captured from the current successful run products in
+`/Users/jdsimon/mermaid/cfneic` and copied into
+`tests/fixtures/legacy_outputs/` for regression comparisons.
 
 - Capture date: 2026-06-04
 - Repo branch: `dev`
 - Repo commit at capture: `2c78b1c`
 - Run identifier: `run1`
-- Known-good run root: `/Users/jdsimon/mermaid/cfneic`
+- Frozen fixture root: `tests/fixtures/legacy_outputs/`
 
 ## Toolchain And Platform
 

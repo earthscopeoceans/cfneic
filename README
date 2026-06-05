@@ -80,7 +80,8 @@ Compilation and workflow verified to run in zsh on Silicon Mac
  line. Headered NEIC files therefore skip their header; no-header NEIC files
  skip the first data row. `run_cfneic --dry-run` reports which case it sees.
 
- To verify that a checkout still reproduces the current `run1` references:
+ To verify that a checkout still reproduces the frozen legacy `run1`
+ references in `tests/fixtures/legacy_outputs/`:
 
      make verify-run1
 

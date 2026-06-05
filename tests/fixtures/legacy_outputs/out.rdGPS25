@@ -1,0 +1,55 @@
+Analysis of /Users/jdsimon/mermaid/cfneic/452.020-P-25/geo_DET.csv pmx=     5000.
+Large sdrift at 2018-11-03T04:00:36.000Z       hrs:     1.594
+  vdrft,sdrft=    29.782     1.978
+  glat1,glon1=   -21.688  -148.435
+ Warning: single GPS ignored2019-03-10T02:18:04.000Z               340
+ Warning: single GPS ignored2019-09-27T09:50:17.000Z               350
+Large sdrift at 2019-11-26T07:34:32.000Z       hrs:     7.446
+  vdrft,sdrft=    21.909     6.797
+  glat1,glon1=   -22.512  -145.753
+Large sdrift at 2019-12-13T05:35:56.000Z       hrs:     1.598
+  vdrft,sdrft=    20.259     1.349
+  glat1,glon1=   -22.679  -145.893
+Large sdrift at 2019-12-13T21:12:17.000Z       hrs:     7.495
+  vdrft,sdrft=    27.764     8.670
+  glat1,glon1=   -22.664  -145.957
+Large sdrift at 2020-04-27T18:06:49.000Z       hrs:     7.434
+  vdrft,sdrft=    13.742     4.256
+  glat1,glon1=   -22.539  -144.556
+Large sdrift at 2020-07-03T15:02:36.000Z       hrs:     7.485
+  vdrft,sdrft=    13.628     4.250
+  glat1,glon1=   -21.967  -143.481
+ Warning: single GPS ignored2020-11-06T00:53:13.000Z               320
+Large sdrift at 2020-12-18T03:09:46.000Z       hrs:     1.246
+  vdrft,sdrft=    25.362     1.317
+  glat1,glon1=   -22.438  -140.562
+ Warning: single GPS ignored2021-02-05T06:53:52.000Z               340
+Large sdrift at 2021-06-14T18:52:57.000Z       hrs:     7.427
+  vdrft,sdrft=    30.615     9.474
+  glat1,glon1=   -22.505  -138.305
+Large sdrift at 2021-07-19T05:50:33.000Z       hrs:     7.485
+  vdrft,sdrft=     8.458     2.638
+  glat1,glon1=   -22.521  -137.751
+Large sdrift at 2021-10-26T15:53:07.000Z       hrs:     1.492
+  vdrft,sdrft=    23.539     1.463
+  glat1,glon1=   -23.015  -136.152
+ Warning: single GPS ignored2022-07-16T12:44:55.000Z               330
+ Warning: single GPS ignored2022-08-02T10:47:00.000Z               350
+ Warning: single GPS ignored2022-09-19T18:45:57.000Z               320
+Large sdrift at 2022-10-06T17:45:38.000Z       hrs:     1.762
+  vdrft,sdrft=    22.547     1.656
+  glat1,glon1=   -22.920  -134.309
+ Warning: single GPS ignored2022-11-29T22:03:58.000Z              2260
+ Warning: single GPS ignored2022-12-05T03:11:55.000Z               350
+Large sdrift at 2023-02-02T13:30:38.000Z       hrs:     1.364
+  vdrft,sdrft=    19.420     1.104
+  glat1,glon1=   -22.868  -132.687
+Large sdrift at 2023-07-25T22:25:17.000Z       hrs:     0.798
+  vdrft,sdrft=    30.891     1.028
+  glat1,glon1=   -24.152  -133.255
+ Warning: single GPS ignored2023-09-17T02:51:41.000Z               390
+
+Number of surfacings:  235
+over   1890.1 days
+          13  surface drifts (> 1km)
+          93  angles differ more than 30 deg from 180

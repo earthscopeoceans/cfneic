@@ -1,0 +1,50 @@
+  n Mermaid    nsurf
+  1       01     273
+  2       02     244
+  3       04     230
+  4       05     224
+  5       06     336
+  6       07      20
+  7       08     321
+  8       09     356
+  9       10     387
+ 10       11     335
+ 11       12     280
+ 12       13     242
+ 13       16     269
+ 14       17     253
+ 15       18     245
+ 16       19     247
+ 17       20     240
+ 18       21     265
+ 19       22     304
+ 20       23     342
+ 21       24     408
+ 22       25     214
+ 23       26     239
+ 24       27     481
+ 25       28     233
+ 26       30       9
+ 27       31     223
+ 28       32     193
+ 29       33     200
+ 30       34      14
+ 31       35     246
+ 32       36     217
+ 33       37     339
+ 34       38     260
+ 35       40     300
+ 36       41     333
+ 37       42     364
+ 38       43      41
+ 39       46     361
+ 40       47      77
+ 41       48     413
+ 42       54     290
+          42  Mermaid GPS records were input
+From 2022   1  0:10:59.370 we search NEIC
+ Last Julian date read from input file:        2023         307
+ Last Julian date in the NEIC file:        2023         307
+        7158  data were read from tomocat.txt
+         335  events could not be improved, see missed_events
+ File hypos* has         3994  possible events

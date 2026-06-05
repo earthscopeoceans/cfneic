@@ -80,6 +80,9 @@ pointed at an input catalog and regenerate the established
 - 2026-06-05: Added `verify_rdgps_fixtures` plus
   `make verify-rdgps-fixtures` to directly exercise legacy and expanded
   `geo_DET.csv` parser layouts from `testdata/`.
+- 2026-06-05: Moved the `verify_run1` comparison baseline into frozen
+  fixtures under `tests/fixtures/legacy_outputs/`; active reruns continue to
+  write under `outputs/`.
 - 2026-06-05: Final full rerun under
   `/Users/jdsimon/mermaid/cfneic/outputs/run1` passed 148 comparison checks
   against the legacy top-level references. The run directory contains 42 active

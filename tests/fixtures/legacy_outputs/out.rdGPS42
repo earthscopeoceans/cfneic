@@ -1,0 +1,42 @@
+Analysis of /Users/jdsimon/mermaid/cfneic/452.020-P-0042/geo_DET.csv pmx=     5000.
+Large sdrift at 2020-01-22T01:06:32.000Z       hrs:     0.481
+  vdrft,sdrft=    97.758     1.957
+  glat1,glon1=   -28.854  -163.121
+Large sdrift at 2021-02-08T14:41:02.000Z       hrs:     0.497
+  vdrft,sdrft=    57.607     1.192
+  glat1,glon1=   -30.077  -169.140
+Large sdrift at 2021-05-15T02:26:45.000Z       hrs:     0.509
+  vdrft,sdrft=    48.456     1.027
+  glat1,glon1=   -30.137  -167.945
+Large sdrift at 2021-05-19T23:25:58.000Z       hrs:     0.487
+  vdrft,sdrft=    61.368     1.244
+  glat1,glon1=   -29.936  -167.871
+Large sdrift at 2022-04-02T02:57:30.000Z       hrs:     0.541
+  vdrft,sdrft=    45.838     1.033
+  glat1,glon1=   -30.412  -170.919
+Large sdrift at 2022-05-25T01:00:27.000Z       hrs:     0.518
+  vdrft,sdrft=    88.134     1.903
+  glat1,glon1=   -30.303  -170.830
+Large sdrift at 2022-07-11T15:20:09.000Z       hrs:     0.526
+  vdrft,sdrft=    52.732     1.155
+  glat1,glon1=   -29.774  -170.548
+Large sdrift at 2023-06-08T16:05:34.000Z       hrs:     0.548
+  vdrft,sdrft=    53.883     1.230
+  glat1,glon1=   -28.166  -173.376
+Large sdrift at 2023-06-15T09:04:42.000Z       hrs:     0.566
+  vdrft,sdrft=    57.642     1.360
+  glat1,glon1=   -28.102  -173.047
+Large sdrift at 2023-06-29T23:11:33.000Z       hrs:     0.597
+  vdrft,sdrft=    42.420     1.055
+  glat1,glon1=   -28.504  -172.729
+Large sdrift at 2023-07-02T06:37:00.000Z       hrs:     0.564
+  vdrft,sdrft=    46.851     1.101
+  glat1,glon1=   -28.631  -172.735
+Large sdrift at 2023-08-02T23:53:24.000Z       hrs:     0.551
+  vdrft,sdrft=    46.322     1.063
+  glat1,glon1=   -29.493  -173.395
+
+Number of surfacings:  365
+over   1464.0 days
+          12  surface drifts (> 1km)
+         100  angles differ more than 30 deg from 180

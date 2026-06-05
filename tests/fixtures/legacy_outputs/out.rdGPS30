@@ -1,0 +1,8 @@
+Analysis of /Users/jdsimon/mermaid/cfneic/452.020-P-0030/geo_DET.csv pmx=     5000.
+ Warning: single GPS ignored2021-05-27T10:46:53.000Z                40
+ Warning: single GPS ignored2021-05-27T10:48:50.000Z                39
+
+Number of surfacings:   12
+over      0.9 days
+           0  surface drifts (> 1km)
+           4  angles differ more than 30 deg from 180

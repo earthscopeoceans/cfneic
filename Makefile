@@ -1,8 +1,8 @@
 FC = gfortran
 FFLAGS ?= -g
 BUILD_DIR ?= build
-VERIFY_BASELINE ?= /Users/jdsimon/mermaid/cfneic
-VERIFY_INPUT ?= $(VERIFY_BASELINE)/inputs
+VERIFY_BASELINE ?= tests/fixtures/legacy_outputs
+VERIFY_INPUT ?= /Users/jdsimon/mermaid/cfneic/inputs
 VERIFY_OUT ?=
 VERIFY_RDGPS_OUT ?=
 

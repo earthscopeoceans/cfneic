@@ -12,7 +12,7 @@ Use this as a working checklist. Keep each step small enough to verify against t
 
 - [x] Remove the hard-coded `rdGPS` root by accepting a CLI argument or environment variable.
 - [x] Replace the legacy `/Users/jdsimon/mermaid/cfneic` default with `output-dir/inputs`.
-- [x] Add a run wrapper that accepts input root, output directory, and `ident`.
+- [x] Add a run wrapper that accepts input root and output directory.
 - [x] Make the wrapper run the current `rdGPS_all` behavior without requiring manual executable/data copying.
 - [x] Handle empty GPS files explicitly, rather than requiring manual moves to `empty_gps`.
 - [x] Keep output and temp files in predictable run-specific locations to avoid accidental overwrites.
@@ -20,13 +20,13 @@ Use this as a working checklist. Keep each step small enough to verify against t
 ## Flat Inputs And Outputs
 
 - [x] Use a flat input catalog directory at `output-dir/inputs` by default.
-- [x] Write generated products under `output-dir/outputs/IDENT`.
+- [x] Write generated products directly under `output-dir/outputs`.
 - [x] Discover flat `*geo*.csv` files instead of requiring legacy `452*/geo_DET.csv` directories.
 - [x] Derive `GPS.*` ids from the GeoCSV `Station` column, with filename fallback for blank-station legacy files.
 - [x] Add before/after SHA-256 manifests to fail if files under `inputs/` change during a run.
 - [x] Create or migrate the real `/Users/jdsimon/mermaid/cfneic/inputs` catalog directory.
 - [x] Teach `rdGPS` to read a flat GeoCSV file path directly and remove the run-local `rdgps_inputs/` compatibility directory.
-- [x] Decide which copied legacy inputs should remain in each `outputs/IDENT` run directory for reproducibility.
+- [x] Decide which copied legacy inputs should remain in `outputs/` for reproducibility.
 
 ## `geo_DET.csv` Parsing
 
@@ -71,8 +71,9 @@ Use this as a working checklist. Keep each step small enough to verify against t
   manifests, `errors.log`, and generated products. Flat GeoCSV files stay in
   `inputs/` and are pinned by manifests instead of being copied into every run.
 - Current `run1` products remain the regression references documented in
-  `REGRESSION_BASELINE.md`; final verification used the real flat input catalog
-  and matched those references exactly.
+  `REGRESSION_BASELINE.md`; fixture copies live under
+  `tests/fixtures/legacy_outputs/`. Final verification used the real flat input
+  catalog and matched those references exactly.
 - `make verify-rdgps-fixtures` runs `rdGPS` directly against the legacy and
   expanded GeoCSV fixtures under `testdata/`, with output confined to a
   temporary directory.

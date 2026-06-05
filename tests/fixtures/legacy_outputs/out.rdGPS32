@@ -1,0 +1,15 @@
+Analysis of /Users/jdsimon/mermaid/cfneic/452.020-P-0032/geo_DET.csv pmx=     5000.
+Large sdrift at 2020-06-13T22:03:40.000Z       hrs:     0.337
+  vdrft,sdrft=    83.598     1.175
+  glat1,glon1=    -6.141  -149.809
+Large sdrift at 2020-07-02T07:57:26.000Z       hrs:     0.396
+  vdrft,sdrft=    78.347     1.292
+  glat1,glon1=    -6.118  -150.640
+Large sdrift at 2021-11-20T13:56:13.000Z       hrs:     0.423
+  vdrft,sdrft=    56.744     1.000
+  glat1,glon1=    -6.062  -157.344
+
+Number of surfacings:  194
+over   1475.5 days
+           3  surface drifts (> 1km)
+          71  angles differ more than 30 deg from 180

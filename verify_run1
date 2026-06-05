@@ -1,13 +1,13 @@
 #!/bin/zsh
 #
-# Regenerate run1 into a temporary output root and compare it to the current
-# known-good products in /Users/jdsimon/mermaid/cfneic.
+# Regenerate run1 into a temporary output root and compare it to frozen
+# legacy-output fixtures from the pre-outputs/ layout.
 
 set -euo pipefail
 
 repo_dir=${0:A:h}
-baseline_root=${BASELINE_ROOT:-/Users/jdsimon/mermaid/cfneic}
-input_root=${INPUT_ROOT:-$baseline_root/inputs}
+baseline_root=${BASELINE_ROOT:-$repo_dir/tests/fixtures/legacy_outputs}
+input_root=${INPUT_ROOT:-/Users/jdsimon/mermaid/cfneic/inputs}
 out_root=${VERIFY_OUT:-}
 
 if [[ -z "$out_root" ]]; then

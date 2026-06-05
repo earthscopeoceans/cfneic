@@ -1,8 +1,8 @@
 # Reproduce The Baseline Run From A Fresh Checkout
 
 This guide verifies that a fresh checkout can build the Fortran programs and
-produce the same `run1` outputs as the current known-good run in
-`/Users/jdsimon/mermaid/cfneic`.
+produce the same `run1` outputs as the frozen legacy-output fixtures in
+`tests/fixtures/legacy_outputs/`.
 
 It intentionally does not use `testdata/`.
 
@@ -14,15 +14,17 @@ Use paths that do not already exist, especially for `OUT`.
 SOURCE=/Users/jdsimon/programs/cfneic
 CLONE=/private/tmp/cfneic-clone-test
 LEGACY_INPUT=/Users/jdsimon/mermaid/cfneic
+BASELINE=$CLONE/tests/fixtures/legacy_outputs
 OUT=/private/tmp/cfneic-clone-run1
 INPUT=$OUT/inputs
 RUN=$OUT/outputs
 LOG=/private/tmp/cfneic-clone-run1.log
 ```
 
-`LEGACY_INPUT` is the existing known-good data/run root. `OUT` must be a new
-run root. The wrapper reads flat catalogs from `OUT/inputs` and rewrites
-generated products in `OUT/outputs`.
+`LEGACY_INPUT` provides the real input catalog source. `BASELINE` is the frozen
+fixture baseline checked into the source tree. `OUT` must be a new run root.
+The wrapper reads flat catalogs from `OUT/inputs` and rewrites generated
+products in `OUT/outputs`.
 
 ## 1. Clone Or Copy The Source
 
@@ -181,16 +183,16 @@ errors.log present with recoverable data issues
 
 ## 9. Compare Core Outputs To Baseline
 
-Compare exact files against the existing known-good run root:
+Compare exact files against the frozen fixture baseline:
 
 ```sh
-cmp "$RUN/out.cfneic_trig_run1" "$LEGACY_INPUT/out.cfneic_trig_run1"
-cmp "$RUN/out.cfneic_int_run1" "$LEGACY_INPUT/out.cfneic_int_run1"
-cmp "$RUN/hypos_run1" "$LEGACY_INPUT/hypos_run1"
-cmp "$RUN/missed_events_run1" "$LEGACY_INPUT/missed_events_run1"
-cmp "$RUN/log.cfneic_run1" "$LEGACY_INPUT/log.cfneic_run1"
-cmp "$RUN/neic.txt" "$LEGACY_INPUT/neic.txt"
-cmp "$RUN/dumgps" "$LEGACY_INPUT/dumgps"
+cmp "$RUN/out.cfneic_trig_run1" "$BASELINE/out.cfneic_trig_run1"
+cmp "$RUN/out.cfneic_int_run1" "$BASELINE/out.cfneic_int_run1"
+cmp "$RUN/hypos_run1" "$BASELINE/hypos_run1"
+cmp "$RUN/missed_events_run1" "$BASELINE/missed_events_run1"
+cmp "$RUN/log.cfneic_run1" "$BASELINE/log.cfneic_run1"
+cmp "$RUN/neic.txt" "$BASELINE/neic.txt"
+cmp "$RUN/dumgps" "$BASELINE/dumgps"
 ```
 
 No output from `cmp` means the files match.
@@ -198,10 +200,10 @@ No output from `cmp` means the files match.
 Check representative `rdGPS` products:
 
 ```sh
-cmp "$RUN/GPS.01" "$LEGACY_INPUT/GPS.01"
-cmp "$RUN/GPS.47" "$LEGACY_INPUT/GPS.47"
-cmp "$RUN/path01.xy" "$LEGACY_INPUT/path01.xy"
-cmp "$RUN/path47.xy" "$LEGACY_INPUT/path47.xy"
+cmp "$RUN/GPS.01" "$BASELINE/GPS.01"
+cmp "$RUN/GPS.47" "$BASELINE/GPS.47"
+cmp "$RUN/path01.xy" "$BASELINE/path01.xy"
+cmp "$RUN/path47.xy" "$BASELINE/path47.xy"
 ```
 
 No output means they match. `out.rdGPS*` embeds the input path on the first
@@ -209,11 +211,11 @@ line, so compare the behavior-bearing diagnostics after that line:
 
 ```sh
 tail -n +2 "$RUN/out.rdGPS01" > /tmp/out.rdGPS01.new
-tail -n +2 "$LEGACY_INPUT/out.rdGPS01" > /tmp/out.rdGPS01.old
+tail -n +2 "$BASELINE/out.rdGPS01" > /tmp/out.rdGPS01.old
 cmp /tmp/out.rdGPS01.new /tmp/out.rdGPS01.old
 
 tail -n +2 "$RUN/out.rdGPS47" > /tmp/out.rdGPS47.new
-tail -n +2 "$LEGACY_INPUT/out.rdGPS47" > /tmp/out.rdGPS47.old
+tail -n +2 "$BASELINE/out.rdGPS47" > /tmp/out.rdGPS47.old
 cmp /tmp/out.rdGPS47.new /tmp/out.rdGPS47.old
 ```
 
