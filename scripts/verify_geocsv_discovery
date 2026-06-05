@@ -1,0 +1,57 @@
+#!/bin/zsh
+#
+# Verify run_cfneic discovers floats from flat *geo*.csv files in input-root,
+# independent of legacy MERMAID serial-prefix directory names.
+
+set -euo pipefail
+
+script_dir=${0:A:h}
+repo_dir=${script_dir:h}
+out_root=${VERIFY_GEOCSV_DISCOVERY_OUT:-}
+
+if [[ -z "$out_root" ]]; then
+  out_root=$(mktemp -d /private/tmp/cfneic-geocsv-discovery.XXXXXX)
+fi
+out_root=${out_root:A}
+
+geo_fixture=$repo_dir/tests/data/geo_DET-legacy.csv
+
+for required in "$repo_dir/run_cfneic" "$geo_fixture"; do
+  if [[ ! -e "$required" ]]; then
+    print -u2 -- "ERROR: Required path does not exist: $required"
+    exit 1
+  fi
+done
+
+input_dir=$out_root/inputs
+run_root=$out_root/run
+dry_log=$out_root/dry-run.log
+
+mkdir -p "$input_dir"
+cp "$geo_fixture" "$input_dir/alpha_geo_DET.csv"
+: > "$input_dir/neic.csv"
+: > "$input_dir/ehb.hdf"
+print "header 1" > "$input_dir/tomocat.txt"
+print "header 2" >> "$input_dir/tomocat.txt"
+
+"$repo_dir/run_cfneic" \
+  --input-root "$input_dir" \
+  --output-dir "$run_root" \
+  --dry-run > "$dry_log"
+
+if ! grep -q "GPS.06 <= alpha_geo_DET.csv (Station=P0006)" "$dry_log"; then
+  print -u2 -- "ERROR: Expected non-452 GeoCSV file to be discovered from input-root"
+  print -u2 -- "ERROR: Actual dry-run log:"
+  sed -n '1,80p' "$dry_log" >&2
+  exit 1
+fi
+
+if grep -q "filename fallback" "$dry_log"; then
+  print -u2 -- "ERROR: Expected Station column to drive float id, not filename fallback"
+  print -u2 -- "ERROR: Actual dry-run log:"
+  sed -n '1,80p' "$dry_log" >&2
+  exit 1
+fi
+
+print "GeoCSV discovery verification output root: $out_root"
+print "GeoCSV discovery verification complete"

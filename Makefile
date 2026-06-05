@@ -7,8 +7,9 @@ VERIFY_INPUT ?= /Users/jdsimon/mermaid/cfneic/inputs
 VERIFY_OUT ?=
 VERIFY_RDGPS_OUT ?=
 VERIFY_NEIC_OUT ?=
+VERIFY_GEOCSV_DISCOVERY_OUT ?=
 
-.PHONY: all verify-legacy-outputs verify-rdgps-fixtures verify-neic-legacy-behavior clean
+.PHONY: all verify-legacy-outputs verify-rdgps-fixtures verify-neic-legacy-behavior verify-geocsv-discovery clean
 
 all: $(BUILD_DIR)/cfneic $(BUILD_DIR)/rdGPS
 
@@ -31,6 +32,9 @@ verify-rdgps-fixtures: all
 
 verify-neic-legacy-behavior: all
 	VERIFY_NEIC_OUT="$(VERIFY_NEIC_OUT)" scripts/verify_neic_legacy_behavior
+
+verify-geocsv-discovery:
+	VERIFY_GEOCSV_DISCOVERY_OUT="$(VERIFY_GEOCSV_DISCOVERY_OUT)" scripts/verify_geocsv_discovery
 
 clean:
 	rm -rf $(BUILD_DIR)
