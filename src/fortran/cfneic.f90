@@ -1,46 +1,28 @@
 program cfneic
 
-! compile: gfortran -g -o $root/cfneic mod_ttak135.f90 timedel.f90 cfneic.f90
-! or g7 cfneic timedel ttak135 bin
-
-! Reads Joel's file. For dates before the last event in
-! file ehb.hdf,  replaces origin time and hypocentre with
-! ISC-EHB estimates. For later dates  it replaces them with the
-! NEIC estimate from neic.csv
-! For the ISC it reads file ehb.hdf (YEAR.hdf files from
-! http://download.isc.ac.uk/isc-ehb/, concatenated). The CSV files are
-! downloaded from https://earthquake.usgs.gov/earthquakes/search/ and
-! concatenated in neic.csv; both files must be in chronological order.
-
-! e.g. for SPPIM: the data from 2018 and ehh stopping at 2020:
-! cat 2018.hdf 2019.hdf 2020.hdf > ehb.hdf
-! cat 2021.csv 2022.csv 2023.csv > neic.csv
-
-! For the GPS locations, run rdGPS first on Joel's geoDET.csv files
-! to create files GPS.01 - GPS.54
-
-! Output:
-! The output is separate for triggered and interpolated records.
-! files out.cfneic_int and out.cfneic_trig have the latest ISC or NEIC
-! hypocentres, updated Mermaid location, epicentral distance gcarc and
-! the observed time tobs corrected for the updated origin time.
-! In addition, it has information about the geolocalization corrections
-! (h and b), and in the last column the equivalent time error estimate
-! locner (after squaring, variance stder and locnerr give the variance
-! to be attributed to tobs).
-! The input file (e.g. tomocat1.txt) is left unchanged with the original
-! hypocentre, mermaid coordinates and tobs.
-
-! file hypos contains hypocentres from both ISC and NEIC that have
-! origin times such that phases might arrive in the recorded seismogram
-! time window, to aid in locating 'missed events'.
-
-! Program mm2rd.f90 can be used to create raydata5 input from the output
-! of cfneic.
-
-! Input from screen, eg: cfneic tomocat.txt
-! Outputs are detailed in cfenic_out_files.txt  
-! Run this in $root
+! Update MERMAID tomocat records with ISC-EHB or NEIC hypocentres and
+! wrapper-generated GPS surfacing tracks.
+!
+! Build with the repository Makefile from the project root. Do not compile
+! this source file directly; source order and dependencies are managed there.
+!
+! Normally invoked by run_cfneic after it prepares neic.txt, dumgps, GPS.*,
+! ehb.hdf, and tomocat.txt in the run directory. Direct program form:
+!   cfneic tomocat.txt
+!
+! Inputs:
+!   tomocat.txt  Fixed-width MERMAID record catalog.
+!   ehb.hdf      Concatenated ISC-EHB HDF catalog, chronological order.
+!   neic.txt     Wrapper-generated subset of neic.csv, chronological order.
+!   dumgps       Wrapper-generated list of usable GPS.* files.
+!   GPS.*        rdGPS outputs for each usable float.
+!
+! Outputs:
+!   out.cfneic_trig  Triggered records with updated hypocentres and positions.
+!   out.cfneic_int   Interpolated records with updated hypocentres and positions.
+!   hypos            Nearby catalog events that could be missed events.
+!   missed_events    Records that could not be matched to a usable catalog/GPS pair.
+!   log.cfneic       Run diagnostics.
 
 
 use ttak135
@@ -65,12 +47,12 @@ character*2 :: gpsmm(NF),kstnm2
 character*80 :: dataf,fname,x
 character*220 :: pde
 character*300 :: emsg
-character*650 :: line           ! to read one line on Joel's file
+character*650 :: line           ! tomocat record line
 character :: ahyp*1,isol*3,iseq*2,ad*1
 integer :: ds,ios,jday,missed,ndata,nloc(NF),nmm
 integer :: i,j,jb=0,k,m,n
 integer :: t0,t1,t2,t3          ! mixed layer crossing epochs
-integer :: tinp(6)              ! inferred origin time from input file Joel
+integer :: tinp(6)              ! inferred origin time from tomocat record
 integer :: twin(6)              ! start of seismogram time window
 integer :: tisc(6)              ! Origin time from ISC or NEIC catalogue
 integer :: tpick(6)             ! picked arrival time
@@ -249,7 +231,7 @@ endif
 
 call date_and_time(date)
 
-! Open Joel's file and read the 2 header lines
+! Open tomocat file and read the two header lines
 open(4,file=dataf,action='read',iostat=ios)
 if(ios.ne.0) then
   write(6,*) 'Cannot open tomocat file ',trim(dataf),', ios=',ios
@@ -268,7 +250,7 @@ missed=0
 kntev=0
 ndata=0
 
-! read Joel's file, compare to ISC catalogue
+! Read tomocat records and compare to ISC catalogue
 do
   read(4,'(a650)',iostat=ios) line
   if(db) then
@@ -287,7 +269,7 @@ do
   read(line,*) (x,i=1,36),kstnm
   k=len_trim(kstnm)
   kstnm2=kstnm(k-1:k)
-  if(db) write(13,'(a,2i4,3i3,i4,5f9.2,1x,a)') 'Joel1: ',tinp,evlo1,evla1, &
+  if(db) write(13,'(a,2i4,3i3,i4,5f9.2,1x,a)') 'Input1: ',tinp,evlo1,evla1, &
     evdp1,stlo,stla,kstnm
   tdif=timediff(tisc,tinp)          ! tdif=tinp-tisc
   ! increase catalogue time tisc until near tinp
@@ -335,7 +317,7 @@ do
         endif
       else
         backspace(4)
-        if(db) write(13,'(a)') 'Backspace Joel'
+        if(db) write(13,'(a)') 'Backspace tomocat'
       endif
       exit
     else                ! regular (ISC not at the end yet)
@@ -414,7 +396,7 @@ do
   read(line,*) (x,i=1,36),kstnm
   k=len_trim(kstnm)
   kstnm2=kstnm(k-1:k)
-  if(db) write(13,'(a,2i4,3i3,i4,5f9.2,1x,a)') 'Joel2: ',tinp,evlo1,evla1, &
+  if(db) write(13,'(a,2i4,3i3,i4,5f9.2,1x,a)') 'Input2: ',tinp,evlo1,evla1, &
     evdp1,stlo,stla,kstnm
   tdif=timediff(tisc,tinp)          ! tdif=tinp-tneic
   ! increase catalogue time tisc until near tinp
@@ -547,7 +529,7 @@ CONTAINS
 
   subroutine matchgps
 
-  ! find the first GPS location *after* mmepoch for Mermaid kstnm
+  ! Find the first GPS location after mmepoch for MERMAID station kstnm
   ! where mmepoch is the epoch of the seismogram (see gett)
 
   real*4 :: d2r=0.01745329,d2km=111.194,dh,da,da2,x
@@ -635,7 +617,7 @@ CONTAINS
   x=x-0.5*gps(jm,m)%d23
 
   if(gps(jm,m)%t2>mmepoch.or.gps(jm,m)%t3<mmepoch) then
-    write(6,'(a,2i4,3i3,i4,5f9.2,1x,a)') 'Joel: ',tinp,evlo1,evla1, &
+    write(6,'(a,2i4,3i3,i4,5f9.2,1x,a)') 'Input: ',tinp,evlo1,evla1, &
     evdp1,stlo,stla,kstnm
     write(6,'(a,i5,3i12)') 'Error t2,mm,t3: ',jm,gps(jm,m)%t2, &
       mmepoch,gps(jm,m)%t3
@@ -730,9 +712,9 @@ CONTAINS
 
   ! reads line and extracts To and hypocentre
   ! where To=tt=yr,jday,hr,minut,sec,msec
-  ! also extracts the time (epoch) of Mermaid surfacing
+  ! also extracts the time (epoch) of MERMAID surfacing
 
-  ! Compared to Joel's files:
+  ! Field mapping from the tomocat record:
   ! tt=SEISMOGRAM_TIME
   ! eval,evlo,evdp = EVLA,EVLO,EVDP
 
@@ -781,14 +763,14 @@ subroutine gets(stlo,stla,stel,gcarc,ocdp,tobs,stder,snr,line)
 
 ! reads line and extracts MERMAID (STation) and pick information
 
-! Comparison with Joel's nomenclature
+! Field mapping from the tomocat record:
 ! stlo,stla = STLA,STLO
 ! stel = - STDP (elevation instead of depth, conform land stations)
 ! ocdp = OCDP
 ! gcarc = 1D_GCARC
 ! snr = SNR
 ! tobs = OBS_TRAVTIME
-! stder = 2STDER / 2    (error at one-sigma level rathere than two)
+! stder = 2STDER / 2    (error at one-sigma level rather than two)
 
 implicit none
 

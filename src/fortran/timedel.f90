@@ -1,3 +1,9 @@
+! Date/time and geodesy helper routines used by cfneic and rdGPS.
+!
+! Build as a dependency through the repository Makefile. Do not compile this
+! source file directly; dependent programs manage linkage through the Makefile.
+!
+
 real*8 function timediff(t1,t2)
 
 ! returns number of seconds t2-t1 between t1 < t2

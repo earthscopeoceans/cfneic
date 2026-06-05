@@ -1,25 +1,21 @@
 program rdGPS
 
-! compile: gfortran -g -o $root/rdGPS rdGPS.f90 timedel.f90 
-
-! reads geoDET.csv for Mermaid P00nr and prints file GPS.nr with first GPS
-! reading for each surfacing as well as distance travelled and
-! angle between last two legs, so enable location error estimates
-! In output each trajectory is characterized by drift=surface drift at the
-! start, and tfd3=underwater float since last surfaceing, angle between this
-! drift and last one, tfd3=time difference since last surfacing
-
-! in addition, it provides a file pathnr.xy for plotting with GMT
-! with surfacings as circles and dives as triangles
-
-! Time unit in the output file is days, except for the surface drift
-! time which is reported in minutes. Speed km/day, acceleration km/day^2
-! Azimuths, angle between legs in degrees.
-
-! Input from screen, eg: rdGPS /path/to/452.020-P-0047_geo_DET.csv 47
-! Legacy directory mode remains available: rdGPS 452.020-P-0047/ 47 [root]
-! Output is GPS file, e.g. ./GPS.47
-! Run this in $root
+! Convert one MERMAID GeoCSV track file into GPS.NR and pathNR.xy products.
+!
+! Build with the repository Makefile from the project root. Do not compile
+! this source file directly; source order and dependencies are managed there.
+!
+! Normally invoked by run_cfneic with a flat GeoCSV path and station number:
+!   rdGPS /path/to/float_geo_DET.csv 47
+!
+! Legacy directory mode remains available:
+!   rdGPS FLOAT_DIR 47 [root]
+!
+! GPS.NR contains dive/surfacing positions, drift distances, speeds,
+! accelerations, and leg angles used by cfneic location-error estimates.
+! pathNR.xy contains plotting coordinates for GMT-style trajectory plots.
+! Durations are days except surface drift time, which is minutes. Speeds are
+! km/day, acceleration is km/day^2, and azimuth/leg angles are degrees.
 
 implicit none
 
@@ -47,7 +43,7 @@ integer :: tt(6),t3(6),year,month,day,hr,mn,sec,jday
 
 logical :: db=.false.,ruthere,wrap=.false.
 logical :: newgps=.false.       ! signals new sequence of GPS
-logical :: deep                 ! true if Mermaid has seen deep layer
+logical :: deep                 ! true if MERMAID has seen deep layer
 logical :: lastline=.false.     ! flags end of input
 
 real*4 :: acc                   ! acceleration between GPS0-GPS2
@@ -61,7 +57,7 @@ real*4 :: d2r=0.01745329252,d2km=111.194        ! deg->rad,km
 real*4 :: exdist                ! distance between gpst1 and 5.5hr trigger
 real*4 :: gdist,gbaz            ! distance,azi between first, last GPS
 real*4 :: glat1,glon1,glatn,glonn  ! first,last GPS position
-real*4 :: lat3,lon3             ! lat, lon from geoDET.csv file      
+real*4 :: lat3,lon3             ! lat, lon from GeoCSV file
 real*4 :: latm0,lonm0           ! start of previous deep leg 
 real*4 :: latm1,lonm1           ! end of previous deep leg 
 real*4 :: latm2,lonm2           ! start of last deep leg
@@ -86,10 +82,10 @@ n=command_argument_count()
 if(n<2) then
   print *,'Usage: rdGPS geo_csv nr'
   print *,'   or: rdGPS dir nr [root]'
-  print *,'e.g.: rdGPS /path/to/452.020-P-0047_geo_DET.csv 47'
-  print *,'   or: rdGPS 452.020-P-0047/ 47 /path/to/root'
+  print *,'e.g.: rdGPS /path/to/float_geo_DET.csv 47'
+  print *,'   or: rdGPS FLOAT_DIR 47 /path/to/root'
   print *,'reads a flat GeoCSV path or root/dir/geo_DET.csv and writes GPS file'
-  print *,'  GPS.47 in this directory for Mermaid P0047'
+  print *,'  GPS.47 in this directory for station P0047'
   print *,'root defaults to CFNEIC_ROOT, if set, otherwise current directory'
   stop
 endif  
@@ -110,7 +106,7 @@ else
   fname = trim(root)//trim(dir)//'/geo_DET.csv'
 endif
 
-! open geo_DET.csv and map the required header fields by name
+! Open GeoCSV and map the required header fields by name
 inquire(file=trim(fname), exist=ruthere)
 if(ruthere) then
   print *,'Reading from:'

@@ -1,11 +1,13 @@
 module ttak135
 
-! QUICK AND DIRTY (=linear) interpolation of the official AK135 travel 
-! time tables
-
-! Note: especially at close distances thes estimates can be several seconds
-! off with respect to properly computed AK135 times. But they have the
-! advantage that no iteration is needed and you'll always get an answer.
+! AK135 travel-time lookup and interpolation routines.
+!
+! Build as a dependency through the repository Makefile. Do not compile this
+! source file directly; dependent programs manage linkage through the Makefile.
+!
+! Uses linear interpolation of tabulated AK135 phase times. Close-distance
+! estimates can differ from full AK135 calculations by several seconds, but
+! this approach avoids iteration and always returns a bounded result.
 
 contains
 
@@ -1686,4 +1688,3 @@ return
 end function
 
 end module ttak135
-
