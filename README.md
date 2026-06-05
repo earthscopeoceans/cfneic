@@ -140,8 +140,8 @@ Run with explicit paths:
 6. convert the first five NEIC CSV fields into `neic.txt`;
 7. run `rdGPS` once for each discovered `*geo*.csv` file;
 8. move header-only GPS files into `empty_gps/`;
-9. write `dumgps` from the remaining non-empty `GPS.*` files;
-10. run `cfneic tomocat.txt` from the output directory;
+9. write a temporary `dumgps` list from the remaining non-empty `GPS.*` files;
+10. run `cfneic tomocat.txt` from the output directory and remove `dumgps`;
 11. write `input_manifest.after` and fail if input checksums changed during the run.
 
 Input files under `--input-root` are not modified. Treat `outputs/` as disposable generated output; every non-dry run recreates it.
@@ -185,7 +185,6 @@ missed_events        records that could not be matched to a usable catalog/GPS p
 log.cfneic           cfneic run diagnostics
 errors.log           recoverable wrapper and Fortran data issues
 neic.txt             wrapper-generated first-five-column NEIC text file
-dumgps               list of usable GPS.* files consumed by cfneic
 GPS.*                per-float rdGPS products
 path*.xy             per-float trajectory plotting coordinates
 out.rdGPS*           rdGPS diagnostics

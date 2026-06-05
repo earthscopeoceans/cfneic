@@ -71,7 +71,13 @@ check_same "$run_dir/missed_events" \
   "$baseline_root/missed_events_run1" "missed_events"
 check_same "$run_dir/log.cfneic" "$baseline_root/log.cfneic_run1" "log.cfneic"
 check_same "$run_dir/neic.txt" "$baseline_root/neic.txt" "neic.txt"
-check_same "$run_dir/dumgps" "$baseline_root/dumgps" "dumgps"
+if [[ -e "$run_dir/dumgps" ]]; then
+  print -u2 -- "ERROR: EXTRA generated dumgps"
+  failed_checks=$((failed_checks + 1))
+  rc=1
+else
+  ok_checks=$((ok_checks + 1))
+fi
 
 active_generated=($run_dir/GPS.*(N:t))
 active_baseline=($baseline_root/GPS.*(N:t))

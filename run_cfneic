@@ -313,6 +313,7 @@ trap check_input_manifest EXIT
   write_dumgps
 
   "$repo_dir/build/cfneic" tomocat.txt
+  rm -f dumgps
 
   for expected in \
     "out.cfneic_trig" \
