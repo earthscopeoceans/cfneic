@@ -96,7 +96,7 @@ Compilation and workflow verified to run in zsh on Silicon Mac
 
      make verify-neic-legacy-behavior
 
- The old `scripts/rdGPS_all` and manual `cfneic tomocat.txt run1` path is
+ The old `scripts/rdGPS_all` and manual `cfneic tomocat.txt` path is
  retained as legacy context only. Normal runs should use `run_cfneic`.
 
 ++ DEBUG ++
@@ -105,14 +105,14 @@ The modernized `run_cfneic` wrapper writes recoverable data issues to
 `errors.log` in the output directory and keeps processing. It currently handles
 two common legacy failures automatically:
 
-    legacy error: $ ./cfneic tomocat.txt run1
+    legacy error: $ ./cfneic tomocat.txt
                   Reading neic.csv
                    STOP GPS.* file is empty
 
     wrapper behavior: Move header-only GPS files into empty_gps/ and log the
                       moved files in errors.log.
 
-    legacy error: $ ./cfneic tomocat.txt run1
+    legacy error: $ ./cfneic tomocat.txt
                   Reading neic.csv
                   File ehb.hdf starts at 2018   1  0:19:15.680
                   Seeking GPS for 39 among:
@@ -172,7 +172,7 @@ or exhausted Fortran array bounds, still stop the run.
  tdif: difference between the two
  dist: difference in epicentre
 
- The file hypos_ident contains hypocentres from both ISC and NEIC that have
+ The file hypos contains hypocentres from both ISC and NEIC that have
  origin times such that phases might arrive in the recorded seismogram time
  window, to aid in locating 'missed events' manually
 

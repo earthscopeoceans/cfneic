@@ -13,7 +13,6 @@ tomocat=
 neic=
 ehb=
 dry_run=false
-output_suffix=run1
 typeset -a geo_csvs
 typeset -a geo_nrs
 
@@ -190,7 +189,6 @@ preflight_inputs() {
   print "  input root: $input_root"
   print "  output dir: $output_dir"
   print "  outputs dir: $run_dir"
-  print "  cfneic output_suffix: $output_suffix (fixed legacy filename suffix)"
   print "  tomocat: $tomocat"
   print "  neic: $neic"
   print "  ehb: $ehb"
@@ -314,14 +312,14 @@ trap check_input_manifest EXIT
   fi
   write_dumgps
 
-  "$repo_dir/build/cfneic" tomocat.txt "$output_suffix"
+  "$repo_dir/build/cfneic" tomocat.txt
 
   for expected in \
-    "out.cfneic_trig_$output_suffix" \
-    "out.cfneic_int_$output_suffix" \
-    "hypos_$output_suffix" \
-    "missed_events_$output_suffix" \
-    "log.cfneic_$output_suffix"; do
+    "out.cfneic_trig" \
+    "out.cfneic_int" \
+    "hypos" \
+    "missed_events" \
+    "log.cfneic"; do
     if [[ ! -s "$expected" ]]; then
       print -u2 -- "ERROR: cfneic did not create expected non-empty output: $expected"
       exit 1

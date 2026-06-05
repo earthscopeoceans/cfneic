@@ -62,16 +62,16 @@ check_count() {
   fi
 }
 
-for file in \
-  out.cfneic_trig_run1 \
-  out.cfneic_int_run1 \
-  hypos_run1 \
-  missed_events_run1 \
-  log.cfneic_run1 \
-  neic.txt \
-  dumgps; do
-  check_same "$run_dir/$file" "$baseline_root/$file" "$file"
-done
+check_same "$run_dir/out.cfneic_trig" \
+  "$baseline_root/out.cfneic_trig_run1" "out.cfneic_trig"
+check_same "$run_dir/out.cfneic_int" \
+  "$baseline_root/out.cfneic_int_run1" "out.cfneic_int"
+check_same "$run_dir/hypos" "$baseline_root/hypos_run1" "hypos"
+check_same "$run_dir/missed_events" \
+  "$baseline_root/missed_events_run1" "missed_events"
+check_same "$run_dir/log.cfneic" "$baseline_root/log.cfneic_run1" "log.cfneic"
+check_same "$run_dir/neic.txt" "$baseline_root/neic.txt" "neic.txt"
+check_same "$run_dir/dumgps" "$baseline_root/dumgps" "dumgps"
 
 active_generated=($run_dir/GPS.*(N:t))
 active_baseline=($baseline_root/GPS.*(N:t))

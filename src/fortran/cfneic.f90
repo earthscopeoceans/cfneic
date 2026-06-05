@@ -31,14 +31,14 @@ program cfneic
 ! The input file (e.g. tomocat1.txt) is left unchanged with the original
 ! hypocentre, mermaid coordinates and tobs.
 
-! file hypos_ident contains hypocentres from both ISC and NEIC that have
+! file hypos contains hypocentres from both ISC and NEIC that have
 ! origin times such that phases might arrive in the recorded seismogram
 ! time window, to aid in locating 'missed events'.
 
 ! Program mm2rd.f90 can be used to create raydata5 input from the output
 ! of cfneic.
 
-! Input from screen, eg: cfneic tomocat.txt run1
+! Input from screen, eg: cfneic tomocat.txt
 ! Outputs are detailed in cfenic_out_files.txt  
 ! Run this in $root
 
@@ -66,7 +66,7 @@ character*80 :: dataf,fname,x
 character*220 :: pde
 character*300 :: emsg
 character*650 :: line           ! to read one line on Joel's file
-character :: ahyp*1,isol*3,iseq*2,ad*1,ident*12
+character :: ahyp*1,isol*3,iseq*2,ad*1
 integer :: ds,ios,jday,missed,ndata,nloc(NF),nmm
 integer :: i,j,jb=0,k,m,n
 integer :: t0,t1,t2,t3          ! mixed layer crossing epochs
@@ -105,22 +105,21 @@ logical :: neic,ruthere,gpsok,badgps
 character(len=19), external :: prtep, prtm
 
 n=command_argument_count()
-if(n<2) then
-  print *,'Usage: cfneic tomocat_file ident'
-  print *,'e.g. cfneic tomocat1.txt run1'
+if(n<1) then
+  print *,'Usage: cfneic tomocat_file'
+  print *,'e.g. cfneic tomocat.txt'
   stop
 else
   call get_command_argument(1,dataf)
-  call get_command_argument(2,ident)
 endif
 
-open(3,file='hypos_'//trim(ident))
+open(3,file='hypos')
 write(3,'(a,35x,3a)') 'To','tobs','     evla     evlo  depth    ', &
   'Mw      dt'
-open(12,file='log.cfneic_'//trim(ident))
+open(12,file='log.cfneic')
 write(12,'(a)') '  n Mermaid    nsurf'
-open(10,file='out.cfneic_trig_'//trim(ident),action='write')
-open(11,file='out.cfneic_int_'//trim(ident),action='write')
+open(10,file='out.cfneic_trig',action='write')
+open(11,file='out.cfneic_int',action='write')
 write(10,'(4a)') 'year  jd hr mi  s  ms     evlo     evla', &
   '  evdp   d01   d23  Mw  angle kstnm', &
   '     stlo     stla    gcarc    tobs  stder   tasc     snr  ocdp', &
@@ -261,7 +260,7 @@ if(ios.ne.0) stop 'Cannot read first tomocat header line'
 read(4,'(a650)',iostat=ios) line
 if(ios.ne.0) stop 'Cannot read second tomocat header line'
 
-open(7,file='missed_events_'//trim(ident),action='write')
+open(7,file='missed_events',action='write')
 write(7,'(15x,a,17x,a)') 'tinp','tisc      tdif      dist'
 
 neic=.false.                  ! Use ehb.hdf if false, else neic.txt
