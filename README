@@ -39,13 +39,13 @@ Compilation and workflow verified to run in zsh on Silicon Mac
  and concatenate them into a file neic.csv, also in chronological order, and
  save/cp to $root/inputs.
 
- [3] edit program rdGPS.f90 to define $root directory.
+ [3] No source edits are required for paths. The wrapper passes flat GeoCSV file
+ paths directly to rdGPS.
 
- [5] make program rdGPS_all make executable and copy to $root.
+ [5] rdGPS_all remains as a legacy helper, but the modern wrapper does not
+ require copying it to $root.
 
- [4] compile rdGPS.f90 and cfneic.f90 (see their comment section for the gfortran
- commands).  Compiled rdGPS should automatically be sent to $root; manually cp
- to $root if differently compiled.
+ [4] compile rdGPS.f90 and cfneic.f90 with `make` from this source checkout.
 
 ++ RUN ++
 
@@ -66,8 +66,13 @@ Compilation and workflow verified to run in zsh on Silicon Mac
  `/Users/jdsimon/mermaid/cfneic/outputs/run1`, records before/after input
  checksums, copies inputs needed by legacy programs into the run output
  directory, moves header-only GPS files into empty_gps/, then runs cfneic from
- the run output directory. The original files under `inputs/` are not modified;
- the run fails if their before/after checksums differ.
+ the run output directory. rdGPS reads each flat GeoCSV file directly; no
+ run-local compatibility copy of the GeoCSV catalog is created. The original
+ files under `inputs/` are not modified; the run fails if their before/after
+ checksums differ. Each run directory keeps the three legacy program inputs
+ needed to reproduce cfneic locally (`tomocat.txt`, `neic.csv`, and `ehb.hdf`),
+ plus input manifests and generated diagnostics; flat GeoCSV files remain in the
+ shared input catalog and are pinned by the manifests instead of copied per run.
 
  Legacy manual run path:
 

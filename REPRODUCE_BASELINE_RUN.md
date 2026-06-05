@@ -159,6 +159,7 @@ find "$RUN" -maxdepth 1 -type f -name 'GPS.*' | wc -l
 find "$RUN"/empty_gps -maxdepth 1 -type f -name 'GPS.*' -print | sort
 find "$RUN" -maxdepth 1 -type f -name 'path*.xy' | wc -l
 find "$RUN" -maxdepth 1 -type f -name 'out.rdGPS*' | wc -l
+test ! -e "$RUN/rdgps_inputs"
 wc -l "$RUN/errors.log"
 sed -n '1,20p' "$RUN/errors.log"
 ```
@@ -172,6 +173,7 @@ empty_gps/GPS.44
 empty_gps/GPS.45
 45 path*.xy files
 45 out.rdGPS* files
+no rdgps_inputs compatibility directory
 errors.log present with recoverable data issues
 ```
 

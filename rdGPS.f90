@@ -16,7 +16,8 @@ program rdGPS
 ! time which is reported in minutes. Speed km/day, acceleration km/day^2
 ! Azimuths, angle between legs in degrees.
 
-! Input from screen, eg: rdGPS 452.020-P-0047/ 47
+! Input from screen, eg: rdGPS /path/to/452.020-P-0047_geo_DET.csv 47
+! Legacy directory mode remains available: rdGPS 452.020-P-0047/ 47 [root]
 ! Output is GPS file, e.g. ./GPS.47
 ! Run this in $root
 
@@ -78,30 +79,35 @@ real*4 :: vascent,vdive         ! vertical speeds in mixed layer
 real*4 :: vdrift1,vdrift3       ! speed of surface drift
 real*8 :: timediff
 
-! replace with local directory for GeoCSV:
-! root = '/Users/auguste/proj/2023/ERCP/FINAL/GeoCSV/'
-root = '/Users/jdsimon/mermaid/cfneic/'
+root = '.'
 
 n=command_argument_count()
 if(n<2) then
-  print *,'Usage: rdGPS dir nr [root]'
-  print *,'e.g.: rdGPS 452.020-P-0047/ 47 /Users/jdsimon/mermaid/cfneic'
-  print *,'reads file root/452.020-P-0047/geo_DET.csv and writes GPS file'
+  print *,'Usage: rdGPS geo_csv nr'
+  print *,'   or: rdGPS dir nr [root]'
+  print *,'e.g.: rdGPS /path/to/452.020-P-0047_geo_DET.csv 47'
+  print *,'   or: rdGPS 452.020-P-0047/ 47 /path/to/root'
+  print *,'reads a flat GeoCSV path or root/dir/geo_DET.csv and writes GPS file'
   print *,'  GPS.47 in this directory for Mermaid P0047'
-  print *,'root defaults to CFNEIC_ROOT, if set, otherwise legacy root'
+  print *,'root defaults to CFNEIC_ROOT, if set, otherwise current directory'
   stop
 endif  
 call get_command_argument(1,dir)
 call get_command_argument(2,nr)
-if(n>=3) then
-  call get_command_argument(3,root)
+k=len_trim(dir)
+if(k.ge.4.and.(dir(k-3:k).eq.'.csv'.or.dir(k-3:k).eq.'.CSV')) then
+  fname = trim(dir)
 else
-  call get_environment_variable('CFNEIC_ROOT',root,length=envlen,status=ios)
-  if(ios.ne.0) root = '/Users/jdsimon/mermaid/cfneic/'
+  if(n>=3) then
+    call get_command_argument(3,root)
+  else
+    call get_environment_variable('CFNEIC_ROOT',root,length=envlen,status=ios)
+    if(ios.ne.0.or.envlen.le.0) root = '.'
+  endif
+  k=len_trim(root)
+  if(k>0.and.root(k:k).ne.'/') root=trim(root)//'/'
+  fname = trim(root)//trim(dir)//'/geo_DET.csv'
 endif
-k=len_trim(root)
-if(k>0.and.root(k:k).ne.'/') root=trim(root)//'/'
-fname = trim(root)//trim(dir)//'/geo_DET.csv'
 
 ! open geo_DET.csv and map the required header fields by name
 inquire(file=trim(fname), exist=ruthere)

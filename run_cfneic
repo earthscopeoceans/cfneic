@@ -193,8 +193,6 @@ trap check_input_manifest EXIT
   cp "$ehb" ehb.hdf
   cp "$tomocat" tomocat.txt
 
-  rdgps_root=$run_dir/rdgps_inputs
-  mkdir -p "$rdgps_root"
   typeset -A seen_nrs
 
   nfloat=0
@@ -214,11 +212,8 @@ trap check_input_manifest EXIT
       continue
     fi
     seen_nrs[$nr]=1
-    dir=${geo_csv:t:r}
-    mkdir -p "$rdgps_root/$dir"
-    cp "$geo_csv" "$rdgps_root/$dir/geo_DET.csv"
     nfloat=$((nfloat + 1))
-    "$repo_dir/build/rdGPS" "$dir" "$nr" "$rdgps_root"
+    "$repo_dir/build/rdGPS" "$geo_csv" "$nr"
     if [[ ! -e "GPS.$nr" ]]; then
       log_error "rdGPS: no GPS.$nr created for $geo_csv"
       continue

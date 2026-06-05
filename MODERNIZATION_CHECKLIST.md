@@ -11,11 +11,22 @@ Use this as a working checklist. Keep each step small enough to verify against t
 ## Input Paths And Run Orchestration
 
 - [x] Remove the hard-coded `rdGPS` root by accepting a CLI argument or environment variable.
-- [x] Keep `/Users/jdsimon/mermaid/cfneic` available as a temporary default until the new flow is verified.
+- [x] Replace the legacy `/Users/jdsimon/mermaid/cfneic` default with `output-dir/inputs`.
 - [x] Add a run wrapper that accepts input root, output directory, and `ident`.
 - [x] Make the wrapper run the current `rdGPS_all` behavior without requiring manual executable/data copying.
 - [x] Handle empty GPS files explicitly, rather than requiring manual moves to `empty_gps`.
 - [x] Keep output and temp files in predictable run-specific locations to avoid accidental overwrites.
+
+## Flat Inputs And Outputs
+
+- [x] Use a flat input catalog directory at `output-dir/inputs` by default.
+- [x] Write generated products under `output-dir/outputs/IDENT`.
+- [x] Discover flat `*geo*.csv` files instead of requiring legacy `452*/geo_DET.csv` directories.
+- [x] Derive `GPS.*` ids from the GeoCSV `Station` column, with filename fallback for blank-station legacy files.
+- [x] Add before/after SHA-256 manifests to fail if files under `inputs/` change during a run.
+- [x] Create or migrate the real `/Users/jdsimon/mermaid/cfneic/inputs` catalog directory.
+- [x] Teach `rdGPS` to read a flat GeoCSV file path directly and remove the run-local `rdgps_inputs/` compatibility directory.
+- [x] Decide which copied legacy inputs should remain in each `outputs/IDENT` run directory for reproducibility.
 
 ## `geo_DET.csv` Parsing
 
@@ -29,22 +40,51 @@ Use this as a working checklist. Keep each step small enough to verify against t
 ## `cfneic` Inputs And Outputs
 
 - [x] Document required `cfneic` inputs: `tomocat.txt`, `neic.csv`, `ehb.hdf`, and `GPS.*`.
-- [ ] Preserve the current `run1` outputs as regression references.
-- [ ] Confirm behavior when `neic.csv` has or lacks a header.
-- [ ] Consider replacing shell-generated `neic.txt` and `dumgps` with direct Fortran or wrapper-managed files.
+- [x] Preserve the current `run1` outputs as regression references.
+- [x] Confirm behavior when `neic.csv` has or lacks a header.
+- [x] Consider replacing shell-generated `neic.txt` and `dumgps` with direct Fortran or wrapper-managed files.
 - [x] Make all generated filenames run-specific or output-directory-specific.
 
 ## Fragility Cleanup
 
-- [ ] Replace shell `grep`/`sed -i` preprocessing in `rdGPS` or isolate it in a portable wrapper.
-- [ ] Avoid relying on `line(13:15)` to identify measurement type.
-- [ ] Review fixed-size strings and line lengths before expanded text files are introduced.
-- [ ] Review fixed limits such as `NF=100` and `NS=600`.
-- [ ] Review date limits in `timedel.f90` if future catalogs can exceed year 2099.
+- [x] Replace shell `grep`/`sed -i` preprocessing in `rdGPS` or isolate it in a portable wrapper.
+- [x] Avoid relying on `line(13:15)` to identify measurement type.
+- [x] Review fixed-size strings and line lengths before expanded text files are introduced.
+- [x] Review fixed limits such as `NF=100` and `NS=600`.
+- [x] Review date limits in `timedel.f90` if future catalogs can exceed year 2099.
 
 ## Future Output Curation Package
 
-- [ ] Decide what products are authoritative outputs of this workflow.
-- [ ] Define the schema for curated downstream outputs.
-- [ ] Decide whether the downstream package reads `out.cfneic_*`, `hypos_*`, `missed_events_*`, `log.cfneic_*`, or a new normalized output format.
-- [ ] Defer direct Python wrapping of the Fortran workflow unless there is a clear need.
+- [x] Decide what products are authoritative outputs of this workflow.
+- [x] Define the schema for curated downstream outputs.
+- [x] Decide whether the downstream package reads `out.cfneic_*`, `hypos_*`, `missed_events_*`, `log.cfneic_*`, or a new normalized output format.
+- [x] Defer direct Python wrapping of the Fortran workflow unless there is a clear need.
+
+## Checklist Notes
+
+- Direct flat GeoCSV path support was added to `rdGPS`; the legacy `dir nr [root]`
+  interface remains available for manual compatibility instead of being removed.
+- The real `/Users/jdsimon/mermaid/cfneic/inputs` catalog was populated with
+  45 flat GeoCSV files plus `neic.csv`, `ehb.hdf`, and `tomocat.txt`.
+- Each run directory keeps `tomocat.txt`, `neic.csv`, `ehb.hdf`, input
+  manifests, `errors.log`, and generated products. Flat GeoCSV files stay in
+  `inputs/` and are pinned by manifests instead of being copied into every run.
+- Current `run1` products remain the regression references documented in
+  `REGRESSION_BASELINE.md`; final verification used the real flat input catalog
+  and matched those references exactly.
+- The baseline `neic.csv` has no header, and legacy `cfneic` skips the first
+  generated `neic.txt` line unconditionally. A headered `neic.csv` has its
+  header skipped; a no-header file loses its first NEIC row. A header-aware
+  change preserved science-product text but changed `log.cfneic_run1`, so it was
+  deferred to preserve exact baseline equivalence.
+- `neic.txt` and `dumgps` remain generated by legacy `cfneic` for this pass.
+  Replacing them with direct Fortran or wrapper-managed files should be a
+  separate regression-protected cleanup.
+- `NF=100` and `NS=600` cover the baseline run (`42` active GPS files, maximum
+  `481` surfacing rows in `GPS.27`) but should be raised or made dynamic before
+  substantially larger catalogs.
+- `timedel.f90` still has hard date limits: `march1days` stops outside
+  1900-2099 and `date2epoch` stops outside 1964-2037. Catalogs beyond 2037 need
+  date routine modernization before use.
+- Output curation decisions are recorded in `OUTPUT_CURATION_DECISIONS.md`;
+  downstream packaging remains deferred.
