@@ -39,15 +39,31 @@ print "Verification output root: $out_root"
   --ident "$ident"
 
 rc=0
+ok_checks=0
+failed_checks=0
 
 check_same() {
   local generated=$1
   local baseline=$2
   local label=$3
   if cmp -s "$generated" "$baseline"; then
-    print "OK $label"
+    ok_checks=$((ok_checks + 1))
   else
     print -u2 "MISMATCH $label"
+    failed_checks=$((failed_checks + 1))
+    rc=1
+  fi
+}
+
+check_count() {
+  local actual=$1
+  local expected=$2
+  local label=$3
+  if [[ "$actual" == "$expected" ]]; then
+    ok_checks=$((ok_checks + 1))
+  else
+    print -u2 "MISMATCH $label: actual=$actual expected=$expected"
+    failed_checks=$((failed_checks + 1))
     rc=1
   fi
 }
@@ -59,41 +75,115 @@ for file in \
   "missed_events_$ident" \
   "log.cfneic_$ident" \
   neic.txt \
-  dumgps \
-  GPS.01 \
-  GPS.47 \
-  path01.xy \
-  path47.xy; do
+  dumgps; do
   check_same "$run_dir/$file" "$baseline_root/$file" "$file"
 done
 
-for nr in 01 47; do
-  tail -n +2 "$run_dir/out.rdGPS$nr" > "$out_root/out.rdGPS$nr.generated.body"
-  tail -n +2 "$baseline_root/out.rdGPS$nr" > "$out_root/out.rdGPS$nr.baseline.body"
-  check_same \
-    "$out_root/out.rdGPS$nr.generated.body" \
-    "$out_root/out.rdGPS$nr.baseline.body" \
-    "out.rdGPS$nr body"
+active_generated=($run_dir/GPS.*(N:t))
+active_baseline=($baseline_root/GPS.*(N:t))
+check_count "${#active_generated}" "${#active_baseline}" "active GPS file count"
+for file in $active_baseline; do
+  if [[ ! -e "$run_dir/$file" ]]; then
+    print -u2 "MISSING generated $file"
+    failed_checks=$((failed_checks + 1))
+    rc=1
+  else
+    check_same "$run_dir/$file" "$baseline_root/$file" "$file"
+  fi
+done
+for file in $active_generated; do
+  if [[ ! -e "$baseline_root/$file" ]]; then
+    print -u2 "EXTRA generated $file"
+    failed_checks=$((failed_checks + 1))
+    rc=1
+  fi
 done
 
-active_gps=$(find "$run_dir" -maxdepth 1 -type f -name 'GPS.*' | wc -l | tr -d ' ')
-if [[ "$active_gps" == "42" ]]; then
-  print "OK active GPS count"
+empty_generated=($run_dir/empty_gps/GPS.*(N:t))
+empty_baseline=($baseline_root/empty_gps/GPS.*(N:t))
+check_count "${#empty_generated}" "${#empty_baseline}" "empty GPS file count"
+for file in $empty_baseline; do
+  if [[ ! -e "$run_dir/empty_gps/$file" ]]; then
+    print -u2 "MISSING generated empty_gps/$file"
+    failed_checks=$((failed_checks + 1))
+    rc=1
+  else
+    check_same "$run_dir/empty_gps/$file" "$baseline_root/empty_gps/$file" \
+      "empty_gps/$file"
+  fi
+done
+for file in $empty_generated; do
+  if [[ ! -e "$baseline_root/empty_gps/$file" ]]; then
+    print -u2 "EXTRA generated empty_gps/$file"
+    failed_checks=$((failed_checks + 1))
+    rc=1
+  fi
+done
+
+path_generated=($run_dir/path*.xy(N:t))
+path_baseline=($baseline_root/path*.xy(N:t))
+check_count "${#path_generated}" "${#path_baseline}" "path file count"
+for file in $path_baseline; do
+  if [[ ! -e "$run_dir/$file" ]]; then
+    print -u2 "MISSING generated $file"
+    failed_checks=$((failed_checks + 1))
+    rc=1
+  else
+    check_same "$run_dir/$file" "$baseline_root/$file" "$file"
+  fi
+done
+for file in $path_generated; do
+  if [[ ! -e "$baseline_root/$file" ]]; then
+    print -u2 "EXTRA generated $file"
+    failed_checks=$((failed_checks + 1))
+    rc=1
+  fi
+done
+
+rdgps_generated=($run_dir/out.rdGPS*(N:t))
+rdgps_baseline=($baseline_root/out.rdGPS*(N:t))
+check_count "${#rdgps_generated}" "${#rdgps_baseline}" "out.rdGPS file count"
+for file in $rdgps_baseline; do
+  if [[ ! -e "$run_dir/$file" ]]; then
+    print -u2 "MISSING generated $file"
+    failed_checks=$((failed_checks + 1))
+    rc=1
+  else
+    tail -n +2 "$run_dir/$file" > "$out_root/$file.generated.body"
+    tail -n +2 "$baseline_root/$file" > "$out_root/$file.baseline.body"
+    check_same "$out_root/$file.generated.body" "$out_root/$file.baseline.body" \
+      "$file body"
+  fi
+done
+for file in $rdgps_generated; do
+  if [[ ! -e "$baseline_root/$file" ]]; then
+    print -u2 "EXTRA generated $file"
+    failed_checks=$((failed_checks + 1))
+    rc=1
+  fi
+done
+
+if [[ ! -e "$run_dir/rdgps_inputs" ]]; then
+  ok_checks=$((ok_checks + 1))
 else
-  print -u2 "MISMATCH active GPS count: $active_gps"
+  print -u2 "MISMATCH rdgps_inputs exists"
+  failed_checks=$((failed_checks + 1))
   rc=1
 fi
 
-if [[ ! -e "$run_dir/rdgps_inputs" ]]; then
-  print "OK no rdgps_inputs"
+if cmp -s "$run_dir/input_manifest.before" "$run_dir/input_manifest.after"; then
+  ok_checks=$((ok_checks + 1))
 else
-  print -u2 "MISMATCH rdgps_inputs exists"
+  print -u2 "MISMATCH input manifests before/after"
+  failed_checks=$((failed_checks + 1))
   rc=1
 fi
 
 if [[ $rc -eq 0 ]]; then
-  print "Verification complete: outputs match baseline"
+  print "Verification complete: $ok_checks checks passed"
 else
+  print -u2 "Verification checks passed: $ok_checks"
+  print -u2 "Verification checks failed: $failed_checks"
   print -u2 "Verification failed: $run_dir"
 fi
 

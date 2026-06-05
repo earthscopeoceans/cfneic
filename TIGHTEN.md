@@ -65,3 +65,22 @@ pointed at an input catalog and regenerate the established
   representative `GPS/path` files, representative `out.rdGPS*` bodies, active
   GPS count, and absence of `rdgps_inputs`.
 - 2026-06-05: Bumped patch version to `0.3.4` for the tightening pass.
+- 2026-06-05: Full modern rerun into
+  `/Users/jdsimon/mermaid/cfneic/outputs/run1` matched all cfneic products,
+  all active/empty `GPS.*` products, all `path*.xy` files, and input manifests,
+  but found four rdGPS diagnostic-body mismatches.
+- 2026-06-05: Fixed the diagnostic mismatches by initializing `gpst1/gpstn` for
+  no-data rdGPS outputs (`out.rdGPS03`) and keeping recoverable missing-station
+  details in `errors.log` rather than adding new lines to `out.rdGPS43`,
+  `out.rdGPS44`, and `out.rdGPS45`.
+- 2026-06-05: Expanded `verify_run1` to run the full audit comparison: exact
+  cfneic products, exact `neic.txt` and `dumgps`, all active `GPS.*`, all
+  `empty_gps/GPS.*`, all `path*.xy`, all `out.rdGPS*` bodies after path-bearing
+  line 1, input manifest stability, and absence of `rdgps_inputs`.
+- 2026-06-05: Final full rerun under
+  `/Users/jdsimon/mermaid/cfneic/outputs/run1` passed 148 comparison checks
+  against the legacy top-level references. The run directory contains 42 active
+  `GPS.*` files and `empty_gps/GPS.03`, `GPS.44`, and `GPS.45`.
+- 2026-06-05: Final `errors.log` catalogs 97 recoverable data issues: 3 missing
+  station rows, 3 header-only GPS moves, and 91 P0043 records after the last
+  usable GPS. These are diagnostics only; no compared generated product differs.

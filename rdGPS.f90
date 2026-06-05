@@ -163,6 +163,8 @@ lonm2=0.
 latm3=0.
 lonm3=0.
 ep3=0
+gpst1=0
+gpstn=0
 deep=.false.
 epoch=0
 press=0
@@ -188,8 +190,6 @@ do
   call csv_field(line,istart,timestamp)
   call csv_field(line,istation,kstnm1)
   if(len_trim(kstnm1).eq.0) then
-    write(4,'(a)') 'Missing station in geo_DET.csv measurement'
-    write(4,'(a)') trim(line)
     call log_error('rdGPS: missing station in '//trim(fname)// &
       ' for GPS.'//trim(nr)//': '//trim(line))
     goto 900
