@@ -90,6 +90,10 @@ Compilation and workflow verified to run in zsh on Silicon Mac
 
      make verify-rdgps-fixtures
 
+ To verify the current legacy NEIC header/no-header behavior before changing it:
+
+     make verify-neic-legacy-behavior
+
  The old `rdGPS_all` and manual `cfneic tomocat.txt run1` path is retained as
  legacy context only. Normal runs should use `run_cfneic`.
 

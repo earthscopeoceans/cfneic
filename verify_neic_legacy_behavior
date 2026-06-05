@@ -1,0 +1,103 @@
+#!/bin/zsh
+#
+# Verify the legacy NEIC CSV handling before changing it.
+
+set -euo pipefail
+
+repo_dir=${0:A:h}
+out_root=${VERIFY_NEIC_OUT:-}
+
+if [[ -z "$out_root" ]]; then
+  out_root=$(mktemp -d /private/tmp/cfneic-verify-neic-legacy.XXXXXX)
+fi
+out_root=${out_root:A}
+
+headered_neic=$repo_dir/tests/fixtures/neic/headered_neic.csv
+no_header_neic=$repo_dir/tests/fixtures/neic/no_header_neic.csv
+geo_fixture=$repo_dir/testdata/geo_DET-legacy.csv
+
+for required in "$repo_dir/run_cfneic" "$headered_neic" "$no_header_neic" "$geo_fixture"; do
+  if [[ ! -e "$required" ]]; then
+    print -u2 "Required path does not exist: $required"
+    exit 1
+  fi
+done
+
+check_same() {
+  local actual=$1
+  local expected=$2
+  local label=$3
+  if [[ "$actual" != "$expected" ]]; then
+    print -u2 "MISMATCH $label"
+    print -u2 "  actual:   $actual"
+    print -u2 "  expected: $expected"
+    exit 1
+  fi
+}
+
+prepare_input_root() {
+  local label=$1
+  local neic_csv=$2
+  local input_dir=$out_root/$label/inputs
+
+  mkdir -p "$input_dir"
+  cp "$geo_fixture" "$input_dir/452.020-P-06_geo_DET.csv"
+  cp "$neic_csv" "$input_dir/neic.csv"
+  : > "$input_dir/ehb.hdf"
+  print "header 1" > "$input_dir/tomocat.txt"
+  print "header 2" >> "$input_dir/tomocat.txt"
+  print -r -- "$input_dir"
+}
+
+run_case() {
+  local label=$1
+  local neic_csv=$2
+  local expected_status=$3
+  local expected_first_consumed=$4
+  local input_dir run_root dry_log run_log first_consumed
+
+  input_dir=$(prepare_input_root "$label" "$neic_csv")
+  run_root=$out_root/$label/run
+  dry_log=$out_root/$label/dry-run.log
+  run_log=$out_root/$label/run.log
+
+  "$repo_dir/run_cfneic" \
+    --input-root "$input_dir" \
+    --output-dir "$run_root" \
+    --dry-run > "$dry_log"
+  if ! grep -q "neic.csv: $expected_status" "$dry_log"; then
+    print -u2 "MISMATCH $label dry-run NEIC status"
+    print -u2 "Expected: neic.csv: $expected_status"
+    print -u2 "Actual log:"
+    sed -n '1,40p' "$dry_log" >&2
+    exit 1
+  fi
+
+  set +e
+  "$repo_dir/run_cfneic" \
+    --input-root "$input_dir" \
+    --output-dir "$run_root" > "$run_log" 2>&1
+  local rc=$?
+  set -e
+  if [[ $rc -eq 0 ]]; then
+    print -u2 "Expected $label fixture run to stop after preparing neic.txt"
+    exit 1
+  fi
+  if [[ ! -s "$run_root/outputs/neic.txt" ]]; then
+    print -u2 "Missing generated neic.txt for $label"
+    exit 1
+  fi
+
+  first_consumed=$(sed -n '2p' "$run_root/outputs/neic.txt")
+  check_same "$first_consumed" "$expected_first_consumed" \
+    "$label first NEIC line consumed after legacy skip"
+}
+
+print "NEIC legacy behavior verification output root: $out_root"
+run_case headered "$headered_neic" \
+  "header/non-date first row; legacy cfneic skips it" \
+  "2022-01-01T00:00:01.123Z -10.1 120.1 11.0 4.1"
+run_case no_header "$no_header_neic" \
+  "no header; legacy cfneic skips first NEIC row" \
+  "2022-01-02T00:00:02.234Z -20.2 130.2 22.0 5.2"
+print "NEIC legacy behavior verification complete"

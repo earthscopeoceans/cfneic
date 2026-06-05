@@ -1,0 +1,3 @@
+time,latitude,longitude,depth,mag,extra
+2022-01-01T00:00:01.123Z,-10.1,120.1,11.0,4.1,headered-first
+2022-01-02T00:00:02.234Z,-10.2,120.2,12.0,4.2,headered-second

@@ -5,8 +5,9 @@ VERIFY_BASELINE ?= tests/fixtures/legacy_outputs
 VERIFY_INPUT ?= /Users/jdsimon/mermaid/cfneic/inputs
 VERIFY_OUT ?=
 VERIFY_RDGPS_OUT ?=
+VERIFY_NEIC_OUT ?=
 
-.PHONY: all verify-legacy-outputs verify-rdgps-fixtures clean
+.PHONY: all verify-legacy-outputs verify-rdgps-fixtures verify-neic-legacy-behavior clean
 
 all: $(BUILD_DIR)/cfneic $(BUILD_DIR)/rdGPS
 
@@ -26,6 +27,9 @@ verify-legacy-outputs: all
 
 verify-rdgps-fixtures: all
 	VERIFY_RDGPS_OUT="$(VERIFY_RDGPS_OUT)" ./verify_rdgps_fixtures
+
+verify-neic-legacy-behavior: all
+	VERIFY_NEIC_OUT="$(VERIFY_NEIC_OUT)" ./verify_neic_legacy_behavior
 
 clean:
 	rm -rf $(BUILD_DIR)
