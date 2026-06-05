@@ -4,8 +4,9 @@ BUILD_DIR ?= build
 VERIFY_BASELINE ?= /Users/jdsimon/mermaid/cfneic
 VERIFY_INPUT ?= $(VERIFY_BASELINE)/inputs
 VERIFY_OUT ?=
+VERIFY_RDGPS_OUT ?=
 
-.PHONY: all verify-run1 clean
+.PHONY: all verify-run1 verify-rdgps-fixtures clean
 
 all: $(BUILD_DIR)/cfneic $(BUILD_DIR)/rdGPS
 
@@ -22,6 +23,9 @@ $(BUILD_DIR)/rdGPS: rdGPS.f90 timedel.f90 | $(BUILD_DIR)
 
 verify-run1: all
 	BASELINE_ROOT="$(VERIFY_BASELINE)" INPUT_ROOT="$(VERIFY_INPUT)" VERIFY_OUT="$(VERIFY_OUT)" ./verify_run1
+
+verify-rdgps-fixtures: all
+	VERIFY_RDGPS_OUT="$(VERIFY_RDGPS_OUT)" ./verify_rdgps_fixtures
 
 clean:
 	rm -rf $(BUILD_DIR)

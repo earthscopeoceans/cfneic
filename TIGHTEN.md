@@ -77,6 +77,9 @@ pointed at an input catalog and regenerate the established
   cfneic products, exact `neic.txt` and `dumgps`, all active `GPS.*`, all
   `empty_gps/GPS.*`, all `path*.xy`, all `out.rdGPS*` bodies after path-bearing
   line 1, input manifest stability, and absence of `rdgps_inputs`.
+- 2026-06-05: Added `verify_rdgps_fixtures` plus
+  `make verify-rdgps-fixtures` to directly exercise legacy and expanded
+  `geo_DET.csv` parser layouts from `testdata/`.
 - 2026-06-05: Final full rerun under
   `/Users/jdsimon/mermaid/cfneic/outputs/run1` passed 148 comparison checks
   against the legacy top-level references. The run directory contains 42 active

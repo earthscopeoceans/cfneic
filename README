@@ -84,6 +84,11 @@ Compilation and workflow verified to run in zsh on Silicon Mac
 
      make verify-run1
 
+ To verify the focused `rdGPS` parser fixtures for both legacy and expanded
+ GeoCSV layouts:
+
+     make verify-rdgps-fixtures
+
  The old `rdGPS_all` and manual `cfneic tomocat.txt run1` path is retained as
  legacy context only. Normal runs should use `run_cfneic`.
 

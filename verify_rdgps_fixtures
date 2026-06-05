@@ -1,0 +1,75 @@
+#!/bin/zsh
+#
+# Verify rdGPS can parse both legacy and expanded GeoCSV fixture layouts.
+
+set -euo pipefail
+
+repo_dir=${0:A:h}
+out_root=${VERIFY_RDGPS_OUT:-}
+
+if [[ -z "$out_root" ]]; then
+  out_root=$(mktemp -d /private/tmp/cfneic-rdgps-fixtures.XXXXXX)
+fi
+out_root=${out_root:A}
+
+rdgps=$repo_dir/build/rdGPS
+legacy_csv=$repo_dir/testdata/geo_DET-legacy.csv
+expanded_csv=$repo_dir/testdata/geo_DET-expanded.csv
+
+for required in "$rdgps" "$legacy_csv" "$expanded_csv"; do
+  if [[ ! -e "$required" ]]; then
+    print -u2 "Required path does not exist: $required"
+    exit 1
+  fi
+done
+
+mkdir -p "$out_root"
+
+check_file() {
+  local file=$1
+  local label=$2
+  if [[ ! -s "$file" ]]; then
+    print -u2 "MISSING or empty $label: $file"
+    return 1
+  fi
+}
+
+check_count() {
+  local actual=$1
+  local expected=$2
+  local label=$3
+  if [[ "$actual" != "$expected" ]]; then
+    print -u2 "MISMATCH $label: actual=$actual expected=$expected"
+    return 1
+  fi
+}
+
+run_fixture() {
+  local label=$1
+  local csv=$2
+  local expected_gps_rows=$3
+  local expected_path_rows=$4
+  local run_dir=$out_root/$label
+  local gps_rows path_rows
+
+  mkdir -p "$run_dir"
+  (
+    cd "$run_dir"
+    "$rdgps" "$csv" 06
+  )
+
+  check_file "$run_dir/GPS.06" "$label GPS output"
+  check_file "$run_dir/path06.xy" "$label path output"
+  check_file "$run_dir/out.rdGPS06" "$label diagnostic output"
+
+  gps_rows=$(awk 'NR > 1 && NF {n++} END {print n + 0}' "$run_dir/GPS.06")
+  path_rows=$(awk 'NF {n++} END {print n + 0}' "$run_dir/path06.xy")
+
+  check_count "$gps_rows" "$expected_gps_rows" "$label GPS data rows"
+  check_count "$path_rows" "$expected_path_rows" "$label path rows"
+}
+
+print "rdGPS fixture verification output root: $out_root"
+run_fixture legacy "$legacy_csv" 336 670
+run_fixture expanded "$expanded_csv" 394 786
+print "rdGPS fixture verification complete"

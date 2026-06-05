@@ -36,6 +36,7 @@ Use this as a working checklist. Keep each step small enough to verify against t
 - [x] Validate required columns and fail with a useful error when missing.
 - [x] Preserve output equivalence for known-good GeoCSV v2.2.0-1 inputs.
 - [x] Add at least one fixture or copied sample representing the expanded `geo_DET.csv` layout.
+- [x] Add focused fixture-level verification for legacy and expanded `geo_DET.csv` parsing.
 
 ## `cfneic` Inputs And Outputs
 
@@ -72,6 +73,9 @@ Use this as a working checklist. Keep each step small enough to verify against t
 - Current `run1` products remain the regression references documented in
   `REGRESSION_BASELINE.md`; final verification used the real flat input catalog
   and matched those references exactly.
+- `make verify-rdgps-fixtures` runs `rdGPS` directly against the legacy and
+  expanded GeoCSV fixtures under `testdata/`, with output confined to a
+  temporary directory.
 - The baseline `neic.csv` has no header, and legacy `cfneic` skips the first
   generated `neic.txt` line unconditionally. A headered `neic.csv` has its
   header skipped; a no-header file loses its first NEIC row. A header-aware
