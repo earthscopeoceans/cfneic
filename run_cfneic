@@ -8,6 +8,7 @@ set -euo pipefail
 repo_dir=${0:A:h}
 input_root=
 output_dir=
+default_output_dir=$HOME/mermaid/cfneic
 tomocat=
 neic=
 ehb=
@@ -19,7 +20,7 @@ typeset -a geo_nrs
 usage() {
   cat <<'EOF'
 Usage:
-  run_cfneic --output-dir DIR [--input-root DIR]
+  run_cfneic [--output-dir DIR] [--input-root DIR]
              [--tomocat FILE] [--neic FILE] [--ehb FILE]
 
 Options:
@@ -28,6 +29,7 @@ Options:
                          Default: output-dir/inputs
   -o, --output-dir DIR   Run root containing inputs/ and outputs/ subdirs.
                          Generated files go directly to output-dir/outputs.
+                         Default: ~/mermaid/cfneic
       --tomocat FILE     tomocat input file. Default: input-root/tomocat.txt
       --neic FILE        NEIC CSV file. Default: input-root/neic.csv
       --ehb FILE         ISC-EHB HDF file. Default: input-root/ehb.hdf
@@ -78,12 +80,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ -z "$output_dir" ]]; then
-  print -u2 -- "ERROR: --output-dir is required."
-  usage >&2
-  exit 2
-fi
-
+output_dir=${output_dir:-$default_output_dir}
 output_dir=${output_dir:A}
 input_root=${input_root:-$output_dir/inputs}
 input_root=${input_root:A}
