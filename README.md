@@ -6,7 +6,7 @@ The supported workflow is the `run_cfneic` wrapper. It reads a flat input catalo
 
 Originally written by Guust Nolet. 
 
-Further developed by [Joel D. Simon](https://github.com/jdsimon) for [Bathymetrix](https://github.com/bathymetrix) (<jdsimon@bathymetrix.com>).
+Further developed by [Joel D. Simon](https://github.com/joelsimon) for [Bathymetrix](https://github.com/bathymetrix) (<jdsimon@bathymetrix.com>).
 
 ## Supported workflow
 
