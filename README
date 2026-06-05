@@ -152,7 +152,7 @@ or exhausted Fortran array bounds, still stop the run.
  h: location error due to deviation from straight line path
  locnerr: equivalent time error (sum of dth and dtb in paper, eq 16&17)
 
-*see tobs.info for more
+*see docs/tobs.info for more
 
  Referenced paper:
   @Article{Nolet+2024,
