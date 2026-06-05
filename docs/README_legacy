@@ -1,0 +1,152 @@
+cfneic -- a program to update MERMAID preliminary event metadata (from
+IRIS/EarthScope) with "final/reviewed" ISC/NEIC metadata.
+
+Written by Guust Nolet
+Further developed by Joel D. Simon <jdsimon@bathymetrix.com>
+Last modified 04-Feb-2026, Darwin Kernel Version 23.6.0
+
+Much of this workflow is culled and updated from:
+https://github.com/earthscopeoceans/mmpicking/tree/main
+
+Compilation and workflow verified to run in zsh on Silicon Mac
+
+++ PREREQUISITES ++
+
+ * MERMAID processed/ directory with geo_DET.csv written by automaid:
+ https://github.com/earthscopeoceans/automaid
+
+ !! NB: only verified to run on GeoCSV v2.2.0-1, which do not include
+    "DataQuality" and "SampleCount" columns. This repo requires update.
+
+ * tomocat.txt, written by:
+ https://github.com/joelsimon/omnia/blob/master/mermaid/tomography/write_tomocat1.m
+
+++ INSTALL ++
+
+ In this dir:
+
+ [0] Make $root directory, separate from this code repo, where input/output data
+ files are to be saved, e.g., $MERMAID/cfneic/.  Copy all individual-float
+ processed dirs (e.g., 452.*/) and tomocat.txt there.
+
+ [1] go to http://download.isc.ac.uk/isc-ehb/ and download the latest files such
+ as 2019.hdf.gz, 2020.hdf.gz, etc., if you do not have these yet. Concatenate
+ these hdf files in ehb.hdf in chronological order and save/cp to $root.
+
+ [2] go to https://earthquake.usgs.gov/earthquakes/search/, choose your minimum
+ magnitude as 2.5+ (or custom if that is too low for you), and CSV under Output
+ options, as well as the start and stop dates you want. Download the CSV files
+ and concatenate them into a file neic.csv, also in chronological order, and
+ save/cp to $root.
+
+ [3] edit program rdGPS.f90 to define $root directory.
+
+ [5] make program rdGPS_all make executable and copy to $root.
+
+ [4] compile rdGPS.f90 and cfneic.f90 (see their comment section for the gfortran
+ commands).  Compiled rdGPS should automatically be sent to $root; manually cp
+ to $root if differently compiled.
+
+++ RUN ++
+
+ In $root dir:
+
+ [6] run rdGPS_all to create the GPS.XX files with the diving information for the
+ Mermaids (need only to be done once until you change the geo_DET.csv file)
+
+ [6] Run `cfneic tomocat.txt ident` where 'ident' is some run identification
+ (e.g. run1). Look at out.cfneic_trig* and out.cfneic_int* (I split output into
+ events that triggered a surfacing and the rest). It has more information than
+ you need because this was written for the Mermaid location paper, but the
+ hypocentres have been updated.
+
+++ DEBUG ++
+
+    error: $ ./cfneic tomocat.txt run1
+           Reading neic.csv
+            STOP GPS.* file is empty
+
+ solution: (re)Move empty GPS (155 bytes filesize; e.g., GPS.03, GPS.44, GPS.45)
+
+    error: $ ./cfneic tomocat.txt run1
+	   Reading neic.csv
+	   File ehb.hdf starts at 2018   1  0:19:15.680
+	   Seeking GPS for 39 among:
+	   01 02 04 05 [...]
+	   STOP matchgps: kstnm2 not in gpsmm
+
+ solution: Remove lines for KSTNM found in tomocat with no related geo_DET.csv,
+           (e.g. 50, 29, 52, 53, 45, 44, 49, 39)
+           $ sed -i '' '/P0039/d' tomocat.txt
+
+++ OUTPUT ++
+
+ The out.cfneic_trig has all events that triggered an immediate surfacing
+ The out.cfneic_int file has the other (seriously interpolated) events
+
+ year jd hr mi s ms: origin time listed by ISC or NEIC
+ evlo evla  evdp: hypocentre listed by ISC or NEIC
+ d01 d23: length of last leg and previous leg (as in paper)
+ Mw: Moment magnitude if listed, otherwise mb if listed, otherwise Ms
+ angle: angle between the two legs (figure 3 in paper)
+ kstnm: station code
+ stlo stla: station longitude, latitude
+ gcarc: great circle (assuming ISC or NEIC hypocentre)
+ tobs: observed travel time (from tomocat file) adjusted for updated event time*
+ stder: error estimate (from tomocat file)
+ tasc: time between trigger and surfacing
+ snr: S/N from tomocat file
+ ocdp: Ocean depth from tomocat file
+ stel: station elevation (negative mermaid depth) from tomocat file
+ p: slowness of the P (or p if upgoing) wave; p has negative slowness [s/km]
+ v1 v2: average velocity over previous and current leg (v01,v23 in paper)
+ acc: average acceleration over the two legs
+ b: location error along path due to nonzero acceleration
+ h: location error due to deviation from straight line path
+ locnerr: equivalent time error (sum of dth and dtb in paper, eq 16&17)
+
+*see tobs.info for more
+
+ Referenced paper:
+  @Article{Nolet+2024,
+    author =	 {Guust Nolet and Joel D. Simon and Sebastien Bonnieux},
+    title =	 {How accurately are {MERMAID} seismograms located?},
+    journal =	 SRL,
+    year =	 2024,
+    volume =	 95,
+    number =	 4,
+    pages =	 {2368--2374, doi: 10.1785/0220230377}
+  }
+
+ The missed_events file list all events that could not be identified with ISC or NEIC. Either
+ the inferred origin time was more than 10s off, or the epicentre differed by more than one
+ degree.
+ tinp: inferred origin time
+ tisc: orgin time from NEIC or ISC
+ tdif: difference between the two
+ dist: difference in epicentre
+
+ The file hypos_ident contains hypocentres from both ISC and NEIC that have
+ origin times such that phases might arrive in the recorded seismogram time
+ window, to aid in locating 'missed events' manually
+
+ To: origin time from ISC or NEIC and listed arrival time (epoch)
+ tobs: observed arrival time (epoch)
+ evla evlo depth: ISC or NEIC hypocentre
+ Mw: Moment magnitude if listed, otherwise mb if listed, otherwise Ms
+ dt: travel time (tobs-To)
+
+ The neic.txt file is extracted from the neic.csv file by cfneic.f90 so it is easier to read
+ by this program
+
+ log.cfneic lists Mermaid code numbers and the number of GPS locations
+
+++ NOTES ++
+
+The stuff about GPS was for the MERMAID location paper but is is mixed with
+cfneic. You do not really need to change float locations I think but that is a
+legacy from how I developed the software.
+
+The two programs also have extensive comments at the start that may be
+useful. If you also need software to move these updated hypocentres into the SAC
+file headers let me know.
