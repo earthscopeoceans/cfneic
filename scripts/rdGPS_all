@@ -3,9 +3,12 @@
 # Author: Joel D. Simon <jdsimon@bathymetrix.com>
 # Last modified: 30-Jan-2026, Darwin Kernel Version 23.6.0
 
+script_dir=${0:A:h}
+repo_dir=${script_dir:h}
+
 # Adjust if more MERMAID serial prefixes come onboard
 for d in 452*/; do
   dir=${d:t}
   last2=${dir[-2,-1]}
-  ./rdGPS "$dir" "$last2"
+  "$repo_dir/build/rdGPS" "$dir" "$last2"
 done

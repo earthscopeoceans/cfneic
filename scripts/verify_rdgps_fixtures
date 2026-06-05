@@ -4,7 +4,8 @@
 
 set -euo pipefail
 
-repo_dir=${0:A:h}
+script_dir=${0:A:h}
+repo_dir=${script_dir:h}
 out_root=${VERIFY_RDGPS_OUT:-}
 
 if [[ -z "$out_root" ]]; then
@@ -13,8 +14,8 @@ fi
 out_root=${out_root:A}
 
 rdgps=$repo_dir/build/rdGPS
-legacy_csv=$repo_dir/testdata/geo_DET-legacy.csv
-expanded_csv=$repo_dir/testdata/geo_DET-expanded.csv
+legacy_csv=$repo_dir/tests/data/geo_DET-legacy.csv
+expanded_csv=$repo_dir/tests/data/geo_DET-expanded.csv
 
 for required in "$rdgps" "$legacy_csv" "$expanded_csv"; do
   if [[ ! -e "$required" ]]; then

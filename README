@@ -43,6 +43,9 @@ Compilation and workflow verified to run in zsh on Silicon Mac
 
  No source edits or executable copies are required for normal runs.
 
+ Source lives under `src/fortran/`, helper scripts under `scripts/`, and
+ portable test fixtures under `tests/`.
+
 ++ RUN ++
 
  Run the workflow from a flat input catalog directory:
@@ -94,8 +97,8 @@ Compilation and workflow verified to run in zsh on Silicon Mac
 
      make verify-neic-legacy-behavior
 
- The old `rdGPS_all` and manual `cfneic tomocat.txt run1` path is retained as
- legacy context only. Normal runs should use `run_cfneic`.
+ The old `scripts/rdGPS_all` and manual `cfneic tomocat.txt run1` path is
+ retained as legacy context only. Normal runs should use `run_cfneic`.
 
 ++ DEBUG ++
 

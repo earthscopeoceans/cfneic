@@ -4,7 +4,8 @@
 
 set -euo pipefail
 
-repo_dir=${0:A:h}
+script_dir=${0:A:h}
+repo_dir=${script_dir:h}
 out_root=${VERIFY_NEIC_OUT:-}
 
 if [[ -z "$out_root" ]]; then
@@ -14,7 +15,7 @@ out_root=${out_root:A}
 
 headered_neic=$repo_dir/tests/fixtures/neic/headered_neic.csv
 no_header_neic=$repo_dir/tests/fixtures/neic/no_header_neic.csv
-geo_fixture=$repo_dir/testdata/geo_DET-legacy.csv
+geo_fixture=$repo_dir/tests/data/geo_DET-legacy.csv
 
 for required in "$repo_dir/run_cfneic" "$headered_neic" "$no_header_neic" "$geo_fixture"; do
   if [[ ! -e "$required" ]]; then
