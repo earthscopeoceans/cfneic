@@ -192,26 +192,69 @@ empty_gps/GPS.*      header-only GPS files excluded before cfneic
 input_manifest.*     before/after checksums of the input catalog
 ```
 
-`out.cfneic_trig` contains events that triggered an immediate surfacing. `out.cfneic_int` contains the other, interpolated events.
-
-Selected output columns:
+`out.cfneic_trig` has all events that triggered an immediate surfacing.
+`out.cfneic_int` file has the other (seriously interpolated) events.
 
 ```text
-year jd hr mi s ms   reviewed ISC/NEIC origin time
-evlo evla evdp       reviewed ISC/NEIC hypocenter
-kstnm                station code
-stlo stla            station longitude and latitude
-gcarc                great-circle distance from reviewed hypocenter
-tobs                 observed travel time adjusted for updated event time
-stder                error estimate from tomocat.txt
-tasc                 time between trigger and surfacing
-snr                  signal-to-noise ratio from tomocat.txt
-ocdp                 ocean depth from tomocat.txt
-stel                 station elevation, negative MERMAID depth from tomocat.txt
-p                    P-wave slowness; upgoing p has negative slowness
-v1 v2                average velocities over previous and current legs
-acc                  average acceleration over the two legs
-b h locnerr          location-error terms from the MERMAID location workflow
+year jd hr mi s ms
+    Origin time listed by ISC or NEIC.
+
+evlo evla evdp
+    Hypocenter longitude, latitude, and depth listed by ISC or NEIC.
+
+d01 d23
+    Lengths of the previous and last legs, respectively (as defined in the paper).
+
+Mw
+    Moment magnitude if listed; otherwise mb if listed; otherwise Ms.
+
+angle
+    Angle between the two legs (Figure 3 in the paper).
+
+kstnm
+    Station code.
+
+stlo stla
+    Station longitude and latitude.
+
+gcarc
+    Great-circle distance assuming the ISC or NEIC hypocenter.
+
+tobs
+    Observed travel time (from tomocat file), adjusted for the updated event origin time.*
+
+stder
+    Error estimate from the tomocat file.
+
+tasc
+    Time between trigger and surfacing.
+
+snr
+    Signal-to-noise ratio from the tomocat file.
+
+ocdp
+    Ocean depth from the tomocat file.
+
+stel
+    Station elevation (negative MERMAID depth) from the tomocat file.
+
+p
+    Slowness of the P wave (or p if upgoing); upgoing p has negative slowness [s/km].
+
+v1 v2
+    Average velocities over the previous and current legs, respectively (v01 and v23 in the paper).
+
+acc
+    Average acceleration over the two legs.
+
+b
+    Location error along the path due to nonzero acceleration.
+
+h
+    Location error due to deviation from a straight-line path.
+
+locnerr
+    Equivalent travel-time error (sum of dth and dtb in the paper; Eqs. 16–17).
 ```
 
 See `docs/tobs.info` for more about `tobs`.
