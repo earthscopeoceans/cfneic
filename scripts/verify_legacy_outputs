@@ -88,15 +88,59 @@ check_count() {
   fi
 }
 
+check_neic_first_five_same() {
+  local generated=$1
+  local baseline=$2
+  local label=$3
+  local generated_first_five=$out_root/${label}.generated.first-five
+  local baseline_first_five=$out_root/${label}.baseline.first-five
+  awk '{print $1,$2,$3,$4,$5}' "$generated" > "$generated_first_five"
+  awk '{print $1,$2,$3,$4,$5}' "$baseline" > "$baseline_first_five"
+  check_same "$generated_first_five" "$baseline_first_five" "$label first five fields"
+}
+
+check_origin_sidecar() {
+  local parent=$1
+  local sidecar=$2
+  local label=$3
+  local parent_rows sidecar_rows bad_catalogs
+
+  if [[ ! -s "$sidecar" ]]; then
+    print -u2 -- "ERROR: MISSING generated $label"
+    failed_checks=$((failed_checks + 1))
+    rc=1
+    return
+  fi
+
+  if ! sed -n '1,4p' "$sidecar" | cmp -s - "$repo_dir/tests/fixtures/origin_header.txt"; then
+    print -u2 -- "ERROR: MISMATCH $label header"
+    failed_checks=$((failed_checks + 1))
+    rc=1
+  else
+    ok_checks=$((ok_checks + 1))
+  fi
+
+  parent_rows=$(awk 'NR > 1 {n++} END {print n + 0}' "$parent")
+  sidecar_rows=$(awk '$1 !~ /^#/ && NF {n++} END {print n + 0}' "$sidecar")
+  check_count "$sidecar_rows" "$parent_rows" "$label data row count"
+
+  bad_catalogs=$(awk '$1 !~ /^#/ && NF && $1 != "ISC" && $1 != "NEIC" {n++} END {print n + 0}' "$sidecar")
+  check_count "$bad_catalogs" "0" "$label catalog values"
+}
+
 check_same "$run_dir/out.cfneic_trig" \
   "$baseline_root/out.cfneic_trig_run1" "out.cfneic_trig"
 check_same "$run_dir/out.cfneic_int" \
   "$baseline_root/out.cfneic_int_run1" "out.cfneic_int"
+check_origin_sidecar "$run_dir/out.cfneic_trig" \
+  "$run_dir/out.cfneic_trig.origin.txt" "out.cfneic_trig.origin.txt"
+check_origin_sidecar "$run_dir/out.cfneic_int" \
+  "$run_dir/out.cfneic_int.origin.txt" "out.cfneic_int.origin.txt"
 check_same "$run_dir/hypos" "$baseline_root/hypos_run1" "hypos"
 check_same "$run_dir/missed_events" \
   "$baseline_root/missed_events_run1" "missed_events"
 check_same "$run_dir/log.cfneic" "$baseline_root/log.cfneic_run1" "log.cfneic"
-check_same "$run_dir/neic.txt" "$baseline_root/neic.txt" "neic.txt"
+check_neic_first_five_same "$run_dir/neic.txt" "$baseline_root/neic.txt" "neic.txt"
 if [[ -e "$run_dir/dumgps" ]]; then
   print -u2 -- "ERROR: EXTRA generated dumgps"
   failed_checks=$((failed_checks + 1))

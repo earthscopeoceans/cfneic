@@ -97,8 +97,8 @@ run_case() {
 print "NEIC legacy behavior verification output root: $out_root"
 run_case headered "$headered_neic" \
   "header/non-date first row; legacy cfneic skips it" \
-  "2022-01-01T00:00:01.123Z -10.1 120.1 11.0 4.1"
+  "2022-01-01T00:00:01.123Z -10.1 120.1 11.0 4.1 UNKNOWN"
 run_case no_header "$no_header_neic" \
   "no header; legacy cfneic skips first NEIC row" \
-  "2022-01-02T00:00:02.234Z -20.2 130.2 22.0 5.2"
+  "2022-01-02T00:00:02.234Z -20.2 130.2 22.0 5.2 UNKNOWN"
 print "NEIC legacy behavior verification complete"

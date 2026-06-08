@@ -180,11 +180,13 @@ Important outputs include:
 ```text
 out.cfneic_trig      triggered records with updated hypocenters and positions
 out.cfneic_int       interpolated records with updated hypocenters and positions
+out.cfneic_*.origin.txt
+                     catalog provenance sidecars joined by row position
 hypos                nearby catalog events that could be missed events
 missed_events        records that could not be matched to a usable catalog/GPS pair
 log.cfneic           cfneic run diagnostics
 errors.log           recoverable wrapper and Fortran data issues
-neic.txt             wrapper-generated first-five-column NEIC text file
+neic.txt             wrapper-generated NEIC text file used by cfneic
 GPS.*                per-float rdGPS products
 path*.xy             per-float trajectory plotting coordinates
 out.rdGPS*           rdGPS diagnostics
@@ -194,6 +196,9 @@ input_manifest.*     before/after checksums of the input catalog
 
 `out.cfneic_trig` has all events that triggered an immediate surfacing.
 `out.cfneic_int` file has the other (seriously interpolated) events.
+`out.cfneic_trig.origin.txt` and `out.cfneic_int.origin.txt` provide catalog
+provenance metadata that can be joined to the legacy outputs by row position
+while preserving the historical `out.cfneic_*` formats unchanged.
 
 ```text
 year jd hr mi s ms
@@ -333,7 +338,7 @@ The legacy-output fixtures are regression baselines only; they are not active ru
 `run_cfneic` converts `neic.csv` to `neic.txt` with:
 
 ```text
-first five CSV fields only
+first five CSV fields plus the NEIC/USGS event id
 ```
 
 The legacy `cfneic` program then skips the first line of `neic.txt`.

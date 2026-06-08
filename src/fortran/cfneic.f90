@@ -20,6 +20,7 @@ program cfneic
 ! Outputs:
 !   out.cfneic_trig  Triggered records with updated hypocentres and positions.
 !   out.cfneic_int   Interpolated records with updated hypocentres and positions.
+!   out.cfneic_*.origin.txt  Catalog provenance joined by row position.
 !   hypos            Nearby catalog events that could be missed events.
 !   missed_events    Records that could not be matched to a usable catalog/GPS pair.
 !   log.cfneic       Run diagnostics.
@@ -43,6 +44,8 @@ type(surfacing), dimension(NS,NF) :: gps
 character*8 :: kstnm
 character*8 :: date
 character*3 :: ok,mis
+character*4 :: origin_catalog
+character*32 :: origin_id
 character*2 :: gpsmm(NF),kstnm2
 character*80 :: dataf,fname,x
 character*220 :: pde
@@ -102,6 +105,8 @@ open(12,file='log.cfneic')
 write(12,'(a)') '  n Mermaid    nsurf'
 open(10,file='out.cfneic_trig',action='write')
 open(11,file='out.cfneic_int',action='write')
+open(14,file='out.cfneic_trig.origin.txt',action='write')
+open(15,file='out.cfneic_int.origin.txt',action='write')
 write(10,'(4a)') 'year  jd hr mi  s  ms     evlo     evla', &
   '  evdp   d01   d23  Mw  angle kstnm', &
   '     stlo     stla    gcarc    tobs  stder   tasc     snr  ocdp', &
@@ -110,6 +115,8 @@ write(11,'(4a)') 'year  jd hr mi  s  ms     evlo     evla', &
   '  evdp   d01   d23  Mw  angle kstnm', &
   '     stlo     stla    gcarc    tobs  stder   tasc     snr  ocdp', &
   '  stel     p      v1      v2     acc       b       h locnerr'
+call write_origin_header(14)
+call write_origin_header(15)
 
 ! Read wrapper-generated neic.txt
 inquire(file='neic.csv',exist=ruthere)
@@ -203,9 +210,7 @@ write(12,*) nmm,' Mermaid GPS records were input'
 
 ! open isc catalogue ehb.hdf and read first event
 open(2,file='ehb.hdf',action='read')
-read(2,'(a1,a3,a2,i2,2i3,1x,2i3,f6.2,a1,2f8.3,2f6.1,3f4.1)',iostat=ios)  &
-  ahyp,isol,iseq,tisc(1),month,day,tisc(3),tisc(4),sec,ad, &
-  evla2,evlo2,evdp2,iscdepth,mb,Ms,Mw
+call read_isc_event(ios)
 if(ios.ne.0) then
   write(6,*) 'Error reading first line of ehb.hdf, ios=',ios
   stop
@@ -279,15 +284,14 @@ do
   tdif=timediff(tisc,tinp)          ! tdif=tinp-tisc
   ! increase catalogue time tisc until near tinp
   do while(tdif>10.)
-    read(2,'(a1,a3,a2,i2,2i3,1x,2i3,f6.2,a1,2f8.3,2f6.1,3f4.1)',iostat=ios)&
-      ahyp,isol,iseq,tisc(1),month,day,tisc(3),tisc(4),sec,ad, &
-      evla2,evlo2,evdp2,iscdepth,mb,Ms,Mw
+    call read_isc_event(ios)
     if(is_iostat_end(ios)) then         ! end of ISC?
       neic=.true.
       write(6,'(a,2i4)') 'End of ISC file reached ',tisc(1),tisc(2)
       if(db) write(13,'(a)') 'End of ISC file reached, switch to NEIC'
       ! get first event from NEIC
       read(1,'(a)') pde
+      call set_neic_origin(pde)
       read(pde,'(i4,5(1x,i2),1x,i3)') tisc(1),month,day,(tisc(i),i=3,6)
       call jul(tisc(1),month,day,tisc(2))
       read(pde,*) x,evla2,evlo2,evdp2,Mw
@@ -409,6 +413,7 @@ do
     ! get next event from NEIC
     read(1,'(a)',iostat=ios) pde
     if(ios.ne.0) goto 10
+    call set_neic_origin(pde)
     read(pde,'(i4,5(1x,i2),1x,i3)') tisc(1),month,day,(tisc(i),i=3,6)
     call jul(tisc(1),month,day,tisc(2))
     read(pde,*) x,evla2,evlo2,evdp2,Mw
@@ -508,9 +513,121 @@ CONTAINS
     evla2,evdp2,d01,d23,Mw,alpha,kstnm,stloh,stlah,gcarc,tobs, &
     stder,tasc,nint(snr),nint(ocdp),nint(stel),p, &
     v01,v23,acc,b,h,ertot,trim(mis)
+  if(unit.eq.10) then
+    call write_origin(14)
+  else
+    call write_origin(15)
+  endif
 
   return
   end
+
+  subroutine write_origin_header(unit)
+
+  ! Provenance sidecars can be joined to legacy outputs by row position while
+  ! preserving the historical out.cfneic_* formats unchanged.
+
+  implicit none
+  integer, intent(in) :: unit
+
+  write(unit,'(a)') '# ISC:  https://www.isc.ac.uk/fdsnws/event/1/query?eventid=<event_id>'
+  write(unit,'(a)') '# NEIC: https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=<event_id>'
+  write(unit,'(a)') '#'
+  write(unit,'(a)') '# catalog    event_id'
+
+  return
+  end subroutine write_origin_header
+
+  subroutine write_origin(unit)
+
+  implicit none
+  integer, intent(in) :: unit
+
+  write(unit,'(a4,2x,a32)') origin_catalog,adjustr(origin_id)
+
+  return
+  end subroutine write_origin
+
+  subroutine read_isc_event(ios)
+
+  implicit none
+  integer, intent(out) :: ios
+  character*220 :: record
+
+  read(2,'(a)',iostat=ios) record
+  if(ios.ne.0) return
+  origin_catalog=' ISC'
+  origin_id=trailing_event_id(record)
+  read(record,'(a1,a3,a2,i2,2i3,1x,2i3,f6.2,a1,2f8.3,2f6.1,3f4.1)', &
+    iostat=ios) ahyp,isol,iseq,tisc(1),month,day,tisc(3),tisc(4),sec,ad, &
+    evla2,evlo2,evdp2,iscdepth,mb,Ms,Mw
+  if(ios.ne.0) return
+
+  return
+  end subroutine read_isc_event
+
+  subroutine set_neic_origin(record)
+
+  implicit none
+  character(len=*), intent(in) :: record
+
+  origin_catalog='NEIC'
+  origin_id=trailing_token(record,6)
+
+  return
+  end subroutine set_neic_origin
+
+  character*32 function trailing_event_id(record)
+
+  ! Older/shorter ISC rows may not carry an event id. In that case the final
+  ! token is usually a decimal magnitude, so leave the sidecar id as UNKNOWN.
+
+  implicit none
+  character(len=*), intent(in) :: record
+  character*32 :: token
+
+  token=trailing_token(record,1)
+  if(index(token,'.').gt.0) then
+    trailing_event_id='UNKNOWN'
+  else
+    trailing_event_id=token
+  endif
+
+  return
+  end function trailing_event_id
+
+  character*32 function trailing_token(record,min_tokens)
+
+  ! UNKNOWN is used when a catalog line does not include the expected event
+  ! identifier field; this keeps sidecar row counts aligned without inventing IDs.
+
+  implicit none
+  character(len=*), intent(in) :: record
+  integer, intent(in) :: min_tokens
+  integer :: col,first,last,n,ntokens
+
+  trailing_token='UNKNOWN'
+  col=1
+  ntokens=0
+  n=len_trim(record)
+  do while(col<=n)
+    do while(col<=n.and.record(col:col).eq.' ')
+      col=col+1
+    enddo
+    if(col>n) exit
+    first=col
+    do while(col<=n.and.record(col:col).ne.' ')
+      col=col+1
+    enddo
+    last=col-1
+    ntokens=ntokens+1
+    if(ntokens.ge.min_tokens) then
+      trailing_token=record(first:last)
+    endif
+  enddo
+
+  return
+  end function trailing_token
 
   subroutine log_error(message)
 

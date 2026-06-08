@@ -115,7 +115,7 @@ write_input_manifest() {
 }
 
 write_neic_txt() {
-  awk -F, '{print $1,$2,$3,$4,$5}' neic.csv > neic.txt
+  awk -F, '{id=$12; if(id=="") id="UNKNOWN"; print $1,$2,$3,$4,$5,id}' neic.csv > neic.txt
 }
 
 write_dumgps() {
@@ -317,7 +317,9 @@ trap check_input_manifest EXIT
 
   for expected in \
     "out.cfneic_trig" \
+    "out.cfneic_trig.origin.txt" \
     "out.cfneic_int" \
+    "out.cfneic_int.origin.txt" \
     "hypos" \
     "missed_events" \
     "log.cfneic"; do
