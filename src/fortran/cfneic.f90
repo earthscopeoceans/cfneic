@@ -20,7 +20,8 @@ program cfneic
 ! Outputs:
 !   out.cfneic_trig  Triggered records with updated hypocentres and positions.
 !   out.cfneic_int   Interpolated records with updated hypocentres and positions.
-!   out.cfneic_*.origin.txt  Catalog provenance joined by row position.
+!   out.cfneic_*.origin.txt
+!                    Catalog provenance joined by row position.
 !   hypos            Nearby catalog events that could be missed events.
 !   missed_events    Records that could not be matched to a usable catalog/GPS pair.
 !   log.cfneic       Run diagnostics.
@@ -542,8 +543,15 @@ CONTAINS
 
   implicit none
   integer, intent(in) :: unit
+  integer :: idlen,nspace
+  character*32 :: spaces
 
-  write(unit,'(a4,2x,a32)') origin_catalog,adjustr(origin_id)
+  spaces='                                '
+  idlen=len_trim(origin_id)
+  nspace=max(1,19-7-idlen)
+
+  write(unit,'(a9,a,a)') adjustr(origin_catalog),spaces(1:nspace), &
+    trim(origin_id)
 
   return
   end subroutine write_origin
