@@ -216,9 +216,9 @@ snr                : Signal-to-noise ratio from the tomocat file
 ocdp               : Ocean depth from the tomocat file [m]
 stel               : Station elevation (negative MERMAID depth) from the tomocat file [m]
 p                  : Horizontal slowness (negative when the phase leaves the source upward) [s/km]
-v1 v2              : Average velocities over the drift legs before/after relevant surfacing, respectively (v01 and v23 in the paper) [km/day].
-acc                : Average acceleration over the two drift legs [km/day]
-b                  : Location error along the path due to nonzero acceleration [km/day^2]
+v1 v2              : Average velocities over the drift legs before/after relevant surfacing, respectively (v01 and v23 in the paper) [km/day]
+acc                : Average acceleration over the two drift legs [km/day^2]
+b                  : Location error along the path due to nonzero acceleration [km]
 h                  : Location error due to deviation from a straight-line path [km]
 locnerr            : Equivalent travel-time error (sum of dth and dtb in the paper; Eqs. 16–17) [s]
 ```
