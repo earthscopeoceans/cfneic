@@ -25,7 +25,29 @@ program cfneic
 !   hypos            Nearby catalog events that could be missed events.
 !   missed_events    Records that could not be matched to a usable catalog/GPS pair.
 !   log.cfneic       Run diagnostics.
-
+!
+! Return units:
+! year jd hr mi s ms : catalog origin time; ms is milliseconds
+! evlo evla          : degrees
+! evdp               : km
+! d01 d23            : km
+! Mw                 : magnitude, dimensionless
+! angle              : degrees
+! kstnm              : station code
+! stlo stla          : degrees, corrected station position
+! gcarc              : degrees
+! tobs               : seconds, adjusted by catalog-origin time shift
+! stder              : seconds; code halves tomocat 2STDER to 1-sigma
+! tasc               : hours
+! snr                : dimensionless, rounded to integer
+! ocdp               : same units as tomocat OCDP; no conversion in cfneic, likely m
+! stel               : same units as tomocat STDP, sign-flipped; no conversion, likely m
+! p                  : normally s/km
+! v1 v2              : km/day
+! acc                : km/day^2
+! b h                : km
+! locnerr            : seconds
+! mis                : flag, not physical
 
 use ttak135
 

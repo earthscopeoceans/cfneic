@@ -4,7 +4,7 @@
 
 The supported workflow is the `run_cfneic` wrapper. It reads a flat input catalog, builds local GPS products with `rdGPS`, runs `cfneic`, and writes all generated products under an `outputs/` directory.
 
-Originally written by Guust Nolet. 
+Originally written by Guust Nolet.
 
 Further developed by [Joel D. Simon](https://github.com/joelsimon) for [Bathymetrix](https://github.com/bathymetrix) (<jdsimon@bathymetrix.com>).
 
@@ -201,65 +201,26 @@ provenance metadata that can be joined to the legacy outputs by row position
 while preserving the historical `out.cfneic_*` formats unchanged.
 
 ```text
-year jd hr mi s ms
-    Origin time listed by ISC or NEIC.
-
-evlo evla evdp
-    Hypocenter longitude, latitude, and depth listed by ISC or NEIC.
-
-d01 d23
-    Lengths of the previous and last legs, respectively (as defined in the paper).
-
-Mw
-    Moment magnitude if listed; otherwise mb if listed; otherwise Ms.
-
-angle
-    Angle between the two legs (Figure 3 in the paper).
-
-kstnm
-    Station code.
-
-stlo stla
-    Station longitude and latitude.
-
-gcarc
-    Great-circle distance assuming the ISC or NEIC hypocenter.
-
-tobs
-    Observed travel time (from tomocat file), adjusted for the updated event origin time.*
-
-stder
-    Error estimate from the tomocat file.
-
-tasc
-    Time between trigger and surfacing.
-
-snr
-    Signal-to-noise ratio from the tomocat file.
-
-ocdp
-    Ocean depth from the tomocat file.
-
-stel
-    Station elevation (negative MERMAID depth) from the tomocat file.
-
-p
-    Slowness of the P wave (or p if upgoing); upgoing p has negative slowness [s/km].
-
-v1 v2
-    Average velocities over the previous and current legs, respectively (v01 and v23 in the paper).
-
-acc
-    Average acceleration over the two legs.
-
-b
-    Location error along the path due to nonzero acceleration.
-
-h
-    Location error due to deviation from a straight-line path.
-
-locnerr
-    Equivalent travel-time error (sum of dth and dtb in the paper; Eqs. 16–17).
+year jd hr mi s ms : Origin time listed by ISC or NEIC [UTC]
+evlo evla evdp     : Hypocenter longitude, latitude, and depth listed by ISC or NEIC [degrees]
+d01 d23            : Lengths of drift legs before/after relevant surfacing, respectively (as defined in the paper) [km]
+Mw                 : Moment magnitude if listed; otherwise mb if listed; otherwise Ms
+angle              : Angle between last-two legs d01, d023 (Figure 3 in the paper) [degrees]
+kstnm              : Station code
+stlo stla          : Station longitude and latitude [degrees]
+gcarc              : Great-circle distance assuming the ISC or NEIC hypocenter [degrees]
+tobs               : Observed travel time (from tomocat file), adjusted for the updated event origin time* [s]
+stder              : 1-sigma timing-error (from tomocat file, halved) [s]
+tasc               : Time between trigger and surfacing [hr]
+snr                : Signal-to-noise ratio from the tomocat file
+ocdp               : Ocean depth from the tomocat file [m]
+stel               : Station elevation (negative MERMAID depth) from the tomocat file [m]
+p                  : Horizontal slowness (negative when the phase leaves the source upward) [s/km]
+v1 v2              : Average velocities over the drift legs before/after relevant surfacing, respectively (v01 and v23 in the paper) [km/day].
+acc                : Average acceleration over the two drift legs [km/day]
+b                  : Location error along the path due to nonzero acceleration [km/day^2]
+h                  : Location error due to deviation from a straight-line path [km]
+locnerr            : Equivalent travel-time error (sum of dth and dtb in the paper; Eqs. 16–17) [s]
 ```
 
 See `docs/tobs.info` for more about `tobs`.

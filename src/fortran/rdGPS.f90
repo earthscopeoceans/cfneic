@@ -16,6 +16,22 @@ program rdGPS
 ! pathNR.xy contains plotting coordinates for GMT-style trajectory plots.
 ! Durations are days except surface drift time, which is minutes. Speeds are
 ! km/day, acceleration is km/day^2, and azimuth/leg angles are degrees.
+!
+! Return units:
+! epoch2 epoch3 : Unix epoch seconds
+! t23           : days
+! d23           : km
+! v23           : km/day
+! acc           : km/day^2
+! angle         : degrees
+! latm2 lonm2   : degrees
+! latm3 lonm3   : degrees
+! ng            : count
+! gdist         : meters, because nint(1000*gdist)
+! sdrft3        : km
+! vdrft3        : km/day, because written as 86400*vdrift3
+! year da time3 : timestamp fields
+! surf          : surfacing count
 
 implicit none
 
