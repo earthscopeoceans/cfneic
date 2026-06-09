@@ -7,8 +7,9 @@ set -euo pipefail
 
 script_dir=${0:A:h}
 repo_dir=${script_dir:h}
-baseline_root=${BASELINE_ROOT:-$repo_dir/tests/fixtures/legacy_outputs}
-input_root=${INPUT_ROOT:-/Users/jdsimon/mermaid/cfneic/inputs}
+mermaid_root=${MERMAID:-$HOME/mermaid}
+baseline_root=${BASELINE_ROOT:-$mermaid_root/cfneic/legacy}
+input_root=${INPUT_ROOT:-$baseline_root/GeoCSV}
 out_root=${VERIFY_OUT:-}
 
 if [[ -z "$out_root" ]]; then
@@ -20,7 +21,8 @@ input_root=${input_root:A}
 out_root=${out_root:A}
 run_dir=$out_root/outputs
 tomocat=$input_root/tomocat.txt
-verify_tomocat=$tomocat
+neic=$input_root/neic.csv
+ehb=$input_root/ehb.hdf
 
 for required in "$baseline_root" "$input_root"; do
   if [[ ! -e "$required" ]]; then
@@ -30,9 +32,23 @@ for required in "$baseline_root" "$input_root"; do
 done
 
 if [[ ! -e "$tomocat" ]]; then
-  print -u2 -- "ERROR: Required path does not exist: $tomocat"
-  exit 1
+  tomocat=$baseline_root/tomocat.txt
 fi
+if [[ ! -e "$neic" ]]; then
+  neic=$baseline_root/neic.csv
+fi
+if [[ ! -e "$ehb" ]]; then
+  ehb=$baseline_root/ehb.hdf
+fi
+
+for required in "$tomocat" "$neic" "$ehb"; do
+  if [[ ! -e "$required" ]]; then
+    print -u2 -- "ERROR: Required path does not exist: $required"
+    exit 1
+  fi
+done
+
+verify_tomocat=$tomocat
 
 tomocat_header_lines=0
 while IFS= read -r line; do
@@ -56,6 +72,8 @@ print "Verification output root: $out_root"
 "$repo_dir/run_cfneic" \
   --input-root "$input_root" \
   --tomocat "$verify_tomocat" \
+  --neic "$neic" \
+  --ehb "$ehb" \
   --output-dir "$out_root"
 
 rc=0

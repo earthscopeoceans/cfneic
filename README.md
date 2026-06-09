@@ -229,7 +229,7 @@ See `docs/tobs.info` for more about `tobs`.
 
 ### GeoCSV discovery
 
-Verifies that `run_cfneic` discovers floats from flat `*geo*.csv` files in `--input-root`, independent of legacy serial-prefix directories, and that the GeoCSV `Station` column is preferred over filename fallback.
+Verifies that `run_cfneic` discovers floats from `*geo*.csv` files in `--input-root`, independent of legacy serial-prefix directories, and that the GeoCSV `Station` column is preferred over filename fallback.
 
 ```sh
 make verify-geocsv-discovery
@@ -271,7 +271,7 @@ VERIFY_NEIC_OUT=/tmp/cfneic-neic make verify-neic-legacy-behavior
 
 ### Legacy output regression
 
-Regenerates outputs and compares them against frozen reference products in `tests/fixtures/legacy_outputs/`.
+Regenerates outputs and compares them against frozen reference products in `$MERMAID/cfneic/legacy/`.
 
 ```sh
 make verify-legacy-outputs
@@ -280,8 +280,8 @@ make verify-legacy-outputs
 By default this uses:
 
 ```text
-VERIFY_BASELINE=tests/fixtures/legacy_outputs
-VERIFY_INPUT=/Users/jdsimon/mermaid/cfneic/inputs
+VERIFY_BASELINE=$MERMAID/cfneic/legacy
+VERIFY_INPUT=$MERMAID/cfneic/legacy/GeoCSV
 ```
 
 Override these when needed:

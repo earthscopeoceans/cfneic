@@ -1,4 +1,4 @@
 # ISC:  https://www.isc.ac.uk/fdsnws/event/1/query?eventid=<event_id>
 # NEIC: https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=<event_id>
 #
-# Catalog    event_id
+# catalog    event_id

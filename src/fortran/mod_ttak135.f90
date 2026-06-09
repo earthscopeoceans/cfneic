@@ -9,6 +9,8 @@ module ttak135
 ! estimates can differ from full AK135 calculations by several seconds, but
 ! this approach avoids iteration and always returns a bounded result.
 
+real*4, parameter :: earth_radius_km = 6371.0
+
 contains
 
 real*4 function Ptime(dist,dep)
@@ -915,9 +917,22 @@ real*4 function slw(dist,depth)
 
 ! find slowness at distance dist (degrees) for sourc at depth (km)
 ! Assumes PKP DF core phase if del>113, else P or Pdiff
-
+!
+! Unit table:
+!   dist, del, xi : degrees
+!   depth, x      : km
+!   y             : degrees
+!   t0,t1,t2      : seconds
+!   a             : seconds/degree^2
+!   b             : seconds/degree
+!   rad           : degrees/radian
+!   slw, slwS     : seconds/radian
+!   slw/6371      : seconds/km, in callers that convert it
+!   negative slw/slwS values indicate upward departure from source
+!
 ! returns slw=-12345. if unable to difference for slowness
 ! slope dT/dD is computed using a quadratic fit through 3 points
+! returns seconds/radian; callers divide by Earth radius for seconds/km
 ! If upwards (angle <90) slw is made negative
 
 implicit none
@@ -931,11 +946,11 @@ slw=-12345.
 
 ! case upper crust
 if(dist<3.0.and.depth<20.0) then
-  if(dist<0.723-0.01815*depth) then
+  if(dist<0.713-0.01785*depth) then
     a=atan(dist/max(0.001,depth))
-    slw=-sin(a)/5.8              ! upward P
+    slw=-earth_radius_km*sin(a)/5.8  ! upward P, seconds/radian
   else
-    slw=1.0/5.8                 ! Pg
+    slw=earth_radius_km/5.8          ! Pg, seconds/radian
   endif
   return
 endif  
@@ -985,6 +1000,8 @@ real*4 function slwS(dist,depth)
 
 ! returns slw=-12345. if unable to difference for slowness
 ! slope dT/dD is computed using a quadratic fit through 3 points
+! returns seconds/radian; callers divide by Earth radius for seconds/km
+! negative values indicate upward departure from the source
 
 implicit none
 integer :: i0,i1,j0,j1
@@ -995,9 +1012,9 @@ real*4 :: dist,depth,del,rad=57.29578,t2
 if(dist<3.0.and.depth<20.0) then
   if(dist<0.723-0.01815*depth) then
     a=atan(dist/max(0.001,depth))
-    slwS=-sin(a)/3.46             ! upward S
+    slwS=-earth_radius_km*sin(a)/3.46  ! upward S, seconds/radian
   else
-    slwS=1.0/3.46                ! Sg
+    slwS=earth_radius_km/3.46          ! Sg, seconds/radian
   endif
   return
 endif  

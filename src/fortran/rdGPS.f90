@@ -27,7 +27,7 @@ program rdGPS
 ! latm2 lonm2   : degrees
 ! latm3 lonm3   : degrees
 ! ng            : count
-! gdist         : meters, because nint(1000*gdist)
+! gdist         : m, because nint(1000*gdist)
 ! sdrft3        : km
 ! vdrft3        : km/day, because written as 86400*vdrift3
 ! year da time3 : timestamp fields

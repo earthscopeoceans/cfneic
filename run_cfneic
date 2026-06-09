@@ -23,7 +23,7 @@ Usage:
              [--tomocat FILE] [--neic FILE] [--ehb FILE]
 
 Options:
-  -i, --input-root DIR   Flat input directory containing *geo*.csv, neic.csv,
+  -i, --input-root DIR   Input tree containing *geo*.csv, neic.csv,
                          ehb.hdf, and tomocat.txt.
                          Default: output-dir/inputs
   -o, --output-dir DIR   Run root containing inputs/ and outputs/ subdirs.
@@ -36,7 +36,7 @@ Options:
   -h, --help             Show this help.
 
 The wrapper builds local executables with make if needed, runs rdGPS for each
-flat *geo*.csv file under input-root, verifies input checksums did not change,
+*geo*.csv file under input-root, verifies input checksums did not change,
 remakes output-dir/outputs, moves empty GPS files to empty_gps/, then runs cfneic.
 EOF
 }
@@ -154,8 +154,11 @@ station_to_nr() {
 
 filename_to_nr() {
   local filename=${1:t:r}
+  local parent=${1:h:t}
   local nr=
   if [[ "$filename" =~ '-[PN]-([[:alnum:]]+)' ]]; then
+    nr=$match[1]
+  elif [[ "$parent" =~ '-[PN]-([[:alnum:]]+)' ]]; then
     nr=$match[1]
   fi
   while [[ ${#nr} -gt 2 && $nr == 0* ]]; do
@@ -196,7 +199,7 @@ preflight_inputs() {
 
   print "  outputs behavior: remove and recreate before generating products"
 
-  for geo_csv in "$input_root"/*geo*.csv(N); do
+  for geo_csv in "$input_root"/**/*geo*.csv(N); do
     station=$(geo_station "$geo_csv")
     if [[ -n "$station" ]]; then
       nr=$(station_to_nr "$station")
