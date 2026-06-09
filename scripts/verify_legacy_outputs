@@ -80,6 +80,75 @@ rc=0
 ok_checks=0
 failed_checks=0
 
+print_file_diff() {
+  local generated=$1
+  local baseline=$2
+  local label=$3
+
+  print -u2 -- "ERROR: Diff for $label (baseline -> generated):"
+  { diff -U0 "$baseline" "$generated" || true } | sed -n '1,24p' >&2
+}
+
+print_slowness_mismatches() {
+  local generated=$1
+  local baseline=$2
+  local label=$3
+
+  print -u2 -- "ERROR: Slowness details for $label rows where p changed:"
+  awk '
+    function trim(s) {
+      sub(/^[[:space:]]+/, "", s)
+      sub(/[[:space:]]+$/, "", s)
+      return s
+    }
+    function field(line, start, width) {
+      return trim(substr(line, start, width))
+    }
+    function key(line) {
+      return field(line, 1, 21) " " field(line, 70, 5)
+    }
+    function report(prefix, line) {
+      printf("  %s phase=P source_depth_km=%s gcarc_deg=%s tobs_s=%s p_s_per_km=%s b_km=%s h_km=%s locnerr_s=%s\n", \
+        prefix, field(line, 40, 6), field(line, 93, 9), field(line, 102, 8), \
+        field(line, 144, 6), field(line, 174, 8), field(line, 182, 8), \
+        field(line, 190, 8))
+    }
+    NR == FNR {
+      if (FNR > 1) {
+        rows[FNR - 1] = $0
+        keys[key($0)] = FNR - 1
+      }
+      next
+    }
+    FNR == 1 { next }
+    {
+      row = FNR - 1
+      base_row = rows[row]
+      if (key($0) in keys) {
+        base_row = rows[keys[key($0)]]
+      }
+      oldp = field(base_row, 144, 6)
+      newp = field($0, 144, 6)
+      if (oldp != newp) {
+        printf("ERROR:   row=%d key=\"%s\"\n", row, key($0))
+        report("old", base_row)
+        report("new", $0)
+        shown++
+        if (shown >= 10) {
+          exit
+        }
+      }
+    }
+    END {
+      if (shown == 0) {
+        print "ERROR:   no p-only row changes found"
+      } else if (shown >= 10) {
+        print "ERROR:   slowness detail truncated after 10 rows"
+      }
+    }
+  ' "$baseline" "$generated" >&2
+}
+
 check_same() {
   local generated=$1
   local baseline=$2
@@ -88,6 +157,10 @@ check_same() {
     ok_checks=$((ok_checks + 1))
   else
     print -u2 -- "ERROR: MISMATCH $label"
+    if [[ "$label" == out.cfneic_trig || "$label" == out.cfneic_int ]]; then
+      print_slowness_mismatches "$generated" "$baseline" "$label"
+    fi
+    print_file_diff "$generated" "$baseline" "$label"
     failed_checks=$((failed_checks + 1))
     rc=1
   fi
