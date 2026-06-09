@@ -78,14 +78,16 @@ print "Verification output root: $out_root"
 
 rc=0
 ok_checks=0
+accepted_checks=0
 failed_checks=0
 
 print_file_diff() {
   local generated=$1
   local baseline=$2
   local label=$3
+  local diagnostic_status=${4:-ERROR}
 
-  print -u2 -- "ERROR: Diff for $label (baseline -> generated):"
+  print -u2 -- "$diagnostic_status: Diff for $label (baseline -> generated):"
   { diff -U0 "$baseline" "$generated" || true } | sed -n '1,24p' >&2
 }
 
@@ -93,9 +95,10 @@ print_slowness_mismatches() {
   local generated=$1
   local baseline=$2
   local label=$3
+  local diagnostic_status=${4:-ERROR}
 
-  print -u2 -- "ERROR: Slowness details for $label rows where p changed:"
-  awk '
+  print -u2 -- "$diagnostic_status: Slowness details for $label rows where p changed:"
+  awk -v diagnostic_status="$diagnostic_status" '
     function trim(s) {
       sub(/^[[:space:]]+/, "", s)
       sub(/[[:space:]]+$/, "", s)
@@ -130,7 +133,7 @@ print_slowness_mismatches() {
       oldp = field(base_row, 144, 6)
       newp = field($0, 144, 6)
       if (oldp != newp) {
-        printf("ERROR:   row=%d key=\"%s\"\n", row, key($0))
+        printf("%s:   row=%d key=\"%s\"\n", diagnostic_status, row, key($0))
         report("old", base_row)
         report("new", $0)
         shown++
@@ -141,12 +144,102 @@ print_slowness_mismatches() {
     }
     END {
       if (shown == 0) {
-        print "ERROR:   no p-only row changes found"
+        print diagnostic_status ":   no p-only row changes found"
       } else if (shown >= 10) {
-        print "ERROR:   slowness detail truncated after 10 rows"
+        print diagnostic_status ":   slowness detail truncated after 10 rows"
       }
     }
   ' "$baseline" "$generated" >&2
+}
+
+allow_known_slowness_unit_fix_diff() {
+  local generated=$1
+  local baseline=$2
+  local label=$3
+
+  [[ "$label" == out.cfneic_trig || "$label" == out.cfneic_int ]] || return 1
+
+  # Legacy baselines were generated before upper-crust slw/slwS returned
+  # sec/radian. Accept only the exact p/locnerr changes caused by that unit fix.
+  # These cfneic products contain P-wave slowness from slw(); phase is not a
+  # separate output column, so limiting this exception to them enforces phase=P.
+  awk '
+    function trim(s) {
+      sub(/^[[:space:]]+/, "", s)
+      sub(/[[:space:]]+$/, "", s)
+      return s
+    }
+    function field(line, start, width) {
+      return trim(substr(line, start, width))
+    }
+    NR == FNR {
+      old[FNR] = $0
+      old_count = FNR
+      next
+    }
+    {
+      new_count = FNR
+      if (!(FNR in old)) {
+        invalid = 1
+        next
+      }
+      if ($0 == old[FNR]) {
+        next
+      }
+      if (FNR == 1) {
+        invalid = 1
+        next
+      }
+
+      old_line = old[FNR]
+      if (substr(old_line, 1, 143) != substr($0, 1, 143) ||
+          substr(old_line, 150, 40) != substr($0, 150, 40) ||
+          substr(old_line, 198) != substr($0, 198)) {
+        invalid = 1
+        next
+      }
+
+      old_identity = substr(old_line, 1, 21) substr(old_line, 70, 5)
+      new_identity = substr($0, 1, 21) substr($0, 70, 5)
+      old_p = field(old_line, 144, 6)
+      new_p = field($0, 144, 6)
+      depth = field($0, 40, 6) + 0
+      gcarc = field($0, 93, 9) + 0
+
+      if (old_identity != new_identity || depth >= 20 || gcarc >= 3 ||
+          old_p !~ /^-?0[.]000$/ || new_p != "0.172") {
+        invalid = 1
+        next
+      }
+      changed++
+    }
+    END {
+      if (new_count != old_count || changed == 0 || invalid) {
+        exit 1
+      }
+    }
+  ' "$baseline" "$generated"
+}
+
+check_cfneic_output() {
+  local generated=$1
+  local baseline=$2
+  local label=$3
+
+  if cmp -s "$generated" "$baseline"; then
+    ok_checks=$((ok_checks + 1))
+  elif allow_known_slowness_unit_fix_diff "$generated" "$baseline" "$label"; then
+    print -u2 -- "ACCEPTED: $label differs only by known upper-crust slowness unit fix"
+    print_slowness_mismatches "$generated" "$baseline" "$label" "ACCEPTED"
+    print_file_diff "$generated" "$baseline" "$label" "ACCEPTED"
+    accepted_checks=$((accepted_checks + 1))
+  else
+    print -u2 -- "ERROR: MISMATCH $label"
+    print_slowness_mismatches "$generated" "$baseline" "$label"
+    print_file_diff "$generated" "$baseline" "$label"
+    failed_checks=$((failed_checks + 1))
+    rc=1
+  fi
 }
 
 check_same() {
@@ -219,9 +312,9 @@ check_origin_sidecar() {
   check_count "$bad_catalogs" "0" "$label catalog values"
 }
 
-check_same "$run_dir/out.cfneic_trig" \
+check_cfneic_output "$run_dir/out.cfneic_trig" \
   "$baseline_root/out.cfneic_trig_run1" "out.cfneic_trig"
-check_same "$run_dir/out.cfneic_int" \
+check_cfneic_output "$run_dir/out.cfneic_int" \
   "$baseline_root/out.cfneic_int_run1" "out.cfneic_int"
 check_origin_sidecar "$run_dir/out.cfneic_trig" \
   "$run_dir/out.cfneic_trig.origin" "out.cfneic_trig.origin"
@@ -341,9 +434,12 @@ else
 fi
 
 if [[ $rc -eq 0 ]]; then
-  print "Verification complete: $ok_checks checks passed"
+  print "Verification checks passed: $ok_checks"
+  print "Verification checks accepted expected changes: $accepted_checks"
+  print "Verification checks failed: $failed_checks"
 else
   print -u2 -- "ERROR: Verification checks passed: $ok_checks"
+  print -u2 -- "ERROR: Verification checks accepted expected changes: $accepted_checks"
   print -u2 -- "ERROR: Verification checks failed: $failed_checks"
   print -u2 -- "ERROR: Verification failed: $run_dir"
 fi
