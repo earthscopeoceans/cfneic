@@ -20,7 +20,7 @@ program cfneic
 ! Outputs:
 !   out.cfneic_trig  Triggered records with updated hypocentres and positions.
 !   out.cfneic_int   Interpolated records with updated hypocentres and positions.
-!   out.cfneic_*.origin.txt
+!   out.cfneic_*.origin
 !                    Catalog provenance joined by row position.
 !   hypos            Nearby catalog events that could be missed events.
 !   missed_events    Records that could not be matched to a usable catalog/GPS pair.
@@ -106,8 +106,8 @@ open(12,file='log.cfneic')
 write(12,'(a)') '  n Mermaid    nsurf'
 open(10,file='out.cfneic_trig',action='write')
 open(11,file='out.cfneic_int',action='write')
-open(14,file='out.cfneic_trig.origin.txt',action='write')
-open(15,file='out.cfneic_int.origin.txt',action='write')
+open(14,file='out.cfneic_trig.origin',action='write')
+open(15,file='out.cfneic_int.origin',action='write')
 write(10,'(4a)') 'year  jd hr mi  s  ms     evlo     evla', &
   '  evdp   d01   d23  Mw  angle kstnm', &
   '     stlo     stla    gcarc    tobs  stder   tasc     snr  ocdp', &

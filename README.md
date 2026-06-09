@@ -180,7 +180,7 @@ Important outputs include:
 ```text
 out.cfneic_trig      triggered records with updated hypocenters and positions
 out.cfneic_int       interpolated records with updated hypocenters and positions
-out.cfneic_*.origin.txt
+out.cfneic_*.origin
                      catalog provenance sidecars joined by row position
 hypos                nearby catalog events that could be missed events
 missed_events        records that could not be matched to a usable catalog/GPS pair
@@ -196,7 +196,7 @@ input_manifest.*     before/after checksums of the input catalog
 
 `out.cfneic_trig` has all events that triggered an immediate surfacing.
 `out.cfneic_int` file has the other (seriously interpolated) events.
-`out.cfneic_trig.origin.txt` and `out.cfneic_int.origin.txt` provide catalog
+`out.cfneic_trig.origin` and `out.cfneic_int.origin` provide catalog
 provenance metadata that can be joined to the legacy outputs by row position
 while preserving the historical `out.cfneic_*` formats unchanged.
 

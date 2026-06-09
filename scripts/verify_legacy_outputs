@@ -133,9 +133,9 @@ check_same "$run_dir/out.cfneic_trig" \
 check_same "$run_dir/out.cfneic_int" \
   "$baseline_root/out.cfneic_int_run1" "out.cfneic_int"
 check_origin_sidecar "$run_dir/out.cfneic_trig" \
-  "$run_dir/out.cfneic_trig.origin.txt" "out.cfneic_trig.origin.txt"
+  "$run_dir/out.cfneic_trig.origin" "out.cfneic_trig.origin"
 check_origin_sidecar "$run_dir/out.cfneic_int" \
-  "$run_dir/out.cfneic_int.origin.txt" "out.cfneic_int.origin.txt"
+  "$run_dir/out.cfneic_int.origin" "out.cfneic_int.origin"
 check_same "$run_dir/hypos" "$baseline_root/hypos_run1" "hypos"
 check_same "$run_dir/missed_events" \
   "$baseline_root/missed_events_run1" "missed_events"

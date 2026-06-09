@@ -317,9 +317,9 @@ trap check_input_manifest EXIT
 
   for expected in \
     "out.cfneic_trig" \
-    "out.cfneic_trig.origin.txt" \
+    "out.cfneic_trig.origin" \
     "out.cfneic_int" \
-    "out.cfneic_int.origin.txt" \
+    "out.cfneic_int.origin" \
     "hypos" \
     "missed_events" \
     "log.cfneic"; do
